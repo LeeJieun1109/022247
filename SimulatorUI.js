@@ -61,6 +61,42 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(0.5, currentZoom - 0.1); zoomSlider.value = currentZoom; applyZoom(); });
     zoomSlider.addEventListener('input', (e) => { currentZoom = parseFloat(e.target.value); applyZoom(); });
 
+    // 화면 이동(Pan) 상태 변수
+    let isPanning = false;
+    let panX = 0, panY = 0;
+    let startPanX = 0, startPanY = 0;
+
+    // 통합 Transform 적용 함수 (이동 + 확대)
+    function applyTransform() {
+        canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+    }
+
+    // 줌 기능 수정 (기존 applyZoom 대신 applyTransform 호출로 변경)
+    document.getElementById('zoom-in').addEventListener('click', () => { currentZoom = Math.min(2, currentZoom + 0.1); zoomSlider.value = currentZoom; applyTransform(); });
+    document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(0.5, currentZoom - 0.1); zoomSlider.value = currentZoom; applyTransform(); });
+    zoomSlider.addEventListener('input', (e) => { currentZoom = parseFloat(e.target.value); applyTransform(); });
+
+    // --- 화면 패닝(드래그 이동) 이벤트 추가 ---
+    canvas.addEventListener('mousedown', (e) => {
+        // 게이트나 포트를 클릭한 경우는 이동하지 않음
+        if (e.target !== canvas && e.target !== canvasInner && e.target !== wireLayer) return;
+        
+        isPanning = true;
+        startPanX = e.clientX - panX;
+        startPanY = e.clientY - panY;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - startPanX;
+        panY = e.clientY - startPanY;
+        applyTransform();
+    });
+
+    const stopPanning = () => { isPanning = false; };
+    canvas.addEventListener('mouseup', stopPanning);
+    canvas.addEventListener('mouseleave', stopPanning);
+    
     // SVG 게이트 반환 함수 (아웃라인만, 내부 흰색)
     function getGateSVG(type) {
         if(type === 'AND') return `<svg class="gate-svg" viewBox="0 0 60 40"><path d="M5,5 L35,5 A15,15 0 0,1 35,35 L5,35 Z" fill="white" stroke="black" stroke-width="2"/></svg>`;
