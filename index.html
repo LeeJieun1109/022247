@@ -82,12 +82,24 @@
                     <svg id="wire-layer"></svg>
                     <div id="gate-layer"></div>
                 </div>
+                
+                <!-- 휴지통 아이콘 영역 -->
+                <div id="trash-can" class="trash-can" title="객체를 끌어다 놓으면 삭제됩니다">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </div>
+
                 <div id="table-view-container" class="hidden">
                     <table id="truth-table"></table>
                 </div>
             </main>
         </div>
-        <div class="boolean-equation"><span id="equation-display">대기 중...</span></div>
+        
+        <!-- 하단 수식 표시 영역 (캔버스와 겹치지 않게 워크스페이스 하단으로 배치) -->
+        <div class="boolean-equation">
+            <span id="equation-display">대기 중...</span>
+        </div>
     </section>
 
     <!-- 세부 페이지 2: 게이트 사전 -->
@@ -125,8 +137,8 @@
         <div id="level-grid" class="card-grid"></div>
     </section>
 
-    <script src="SimulatorEngine.js"></script>
-    <script src="SimulatorUI.js"></script>
+    <script src="simulator-engine.js"></script>
+    <script src="simulator-ui.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
