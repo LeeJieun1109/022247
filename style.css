@@ -1,0 +1,80 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+:root {
+    --bg-color: #f4f4f6; 
+    --primary-color: #1b263b; 
+    --secondary-color: #415a77; 
+    --text-color: #333333;
+    --text-light: #ffffff;
+    --perfect: #4a90e2; 
+    --good: #f5a623; 
+    --bad: #d0021b; 
+    --not-done: #cccccc; 
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard Variable', sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
+
+.bg-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml;utf8,<svg opacity="0.05" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10,10 L90,10 L90,90 L10,90 Z" fill="none" stroke="%231b263b" stroke-width="2"/></svg>');
+    z-index: -1;
+}
+
+.page { display: none; min-height: 100vh; padding: 2rem; }
+.page.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem; margin-bottom: 2rem; }
+button { cursor: pointer; border: none; border-radius: 8px; background-color: var(--primary-color); color: var(--text-light); padding: 0.8rem 1.5rem; font-weight: 600; transition: 0.2s; }
+button:hover { background-color: var(--secondary-color); }
+button:active { transform: scale(0.98); }
+
+#main-page.active { display: flex; justify-content: center; align-items: center; }
+.content-box { text-align: center; background: white; padding: 3rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.content-box h1 { margin-bottom: 1rem; color: var(--primary-color); }
+.content-box p { margin-bottom: 2rem; }
+.menu-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+.workspace { display: flex; height: 70vh; gap: 1rem; }
+.gate-toolbar { width: 220px; background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.gate-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 0.8rem; margin-bottom: 0.8rem; border-radius: 8px; font-weight: bold; cursor: grab; }
+.info-btn { padding: 0.2rem 0.6rem; border-radius: 50%; font-size: 0.8rem; }
+
+.canvas-area { flex-grow: 1; background: white; border-radius: 12px; border: 2px dashed var(--secondary-color); position: relative; overflow: hidden; }
+#wire-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+#gate-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+.canvas-gate { position: absolute; width: 60px; height: 40px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: grab; user-select: none; font-size: 0.8rem; font-weight: bold; }
+.port { position: absolute; width: 12px; height: 12px; border-radius: 50%; cursor: crosshair; }
+.port-in { left: -6px; background: #4a90e2; }
+.port-out { right: -6px; background: #f5a623; top: 14px; }
+
+.boolean-equation { position: fixed; bottom: 2rem; right: 2rem; background: var(--primary-color); color: white; padding: 1rem 2rem; border-radius: 30px; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; }
+
+#table-view-container { position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 5; padding: 2rem; overflow: auto; }
+.hidden { display: none !important; }
+table { width: 100%; border-collapse: collapse; text-align: center; }
+th, td { border: 1px solid var(--secondary-color); padding: 0.8rem; }
+th { background: var(--primary-color); color: white; }
+
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.gate-card, .level-card { background: white; padding: 2rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; cursor: pointer; transition: 0.3s; }
+.gate-card:hover, .level-card:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.level-status { display: inline-block; margin-top: 1rem; padding: 0.4rem 1rem; border-radius: 20px; font-weight: bold; color: white; }
+.status-none { background-color: var(--not-done); color: #333; }
+.status-perfect { background-color: var(--perfect); }
+.status-good { background-color: var(--good); }
+.status-bad { background-color: var(--bad); }
+
+.side-menu { position: fixed; top: 0; right: -300px; width: 300px; height: 100%; background: var(--primary-color); color: white; transition: right 0.3s ease; z-index: 100; padding: 3rem 2rem; }
+.side-menu.open { right: 0; }
+.side-menu ul { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+.side-menu .nav-btn { width: 100%; text-align: left; background: transparent; border: 1px solid white; }
+.side-menu .nav-btn:hover { background: white; color: var(--primary-color); }
+.close-btn { position: absolute; top: 1rem; right: 1rem; background: transparent; color: white; font-size: 2rem; padding: 0; width: 40px; height: 40px; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 200; }
+.modal-overlay.active { display: flex; }
+.modal-content { background: white; padding: 3rem; border-radius: 16px; width: 90%; max-width: 500px; position: relative; text-align: center; }
+.modal-content .close-btn { color: var(--text-color); }
+#level-result-display { margin-top: 2rem; font-size: 2rem; font-weight: bold; }
