@@ -7,16 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="bg-overlay"></div>
+    <div id="dim-overlay" class="dim-overlay"></div>
 
     <!-- 우측 슬라이드 메뉴 -->
     <nav id="side-menu" class="side-menu">
         <button id="close-menu-btn" class="close-btn">&times;</button>
-        <ul>
+        <ul class="menu-list">
             <li><button class="nav-btn" data-target="main-page">홈으로</button></li>
-            <li><button class="nav-btn" data-target="page-1">1. 회로 시뮬레이터</button></li>
-            <li><button class="nav-btn" data-target="page-2">2. 게이트 사전</button></li>
-            <li><button class="nav-btn" data-target="page-3">3. 레벨 챌린지</button></li>
+            <li><button class="nav-btn" data-target="page-1">회로 시뮬레이터</button></li>
+            <li><button class="nav-btn" data-target="page-2">게이트 사전</button></li>
+            <li><button class="nav-btn" data-target="page-3">레벨 챌린지</button></li>
         </ul>
     </nav>
 
@@ -24,7 +24,7 @@
     <section id="main-page" class="page active">
         <div class="content-box">
             <h1>디지털 논리회로 마스터</h1>
-            <p>논리 게이트를 직접 설계하고 학습해보세요.</p>
+            <p class="subtitle">10925 이지은B</p>
             <div class="menu-buttons">
                 <button class="nav-btn" data-target="page-1">회로 시뮬레이터</button>
                 <button class="nav-btn" data-target="page-2">게이트 사전</button>
@@ -38,41 +38,81 @@
         <header>
             <h2>회로도 설계</h2>
             <div class="header-controls">
-                <button id="toggle-view-btn">표로 전환</button>
-                <button class="open-menu-btn">메뉴</button>
+                <button id="toggle-view-btn">진리표</button>
+                <button class="open-menu-btn hamburger-btn">&#9776;</button>
             </div>
         </header>
         <div class="workspace">
             <aside class="gate-toolbar">
-                <div class="gate-item" draggable="true" data-type="INPUT"><span>INPUT</span><button class="info-btn" data-info="입력 신호 (x_n)">+</button></div>
-                <div class="gate-item" draggable="true" data-type="AND"><span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button></div>
-                <div class="gate-item" draggable="true" data-type="OR"><span>OR</span><button class="info-btn" data-info="입력 중 하나라도 1이면 1 출력">+</button></div>
-                <div class="gate-item" draggable="true" data-type="XOR"><span>XOR</span><button class="info-btn" data-info="입력이 서로 다를 때만 1 출력">+</button></div>
-                <div class="gate-item" draggable="true" data-type="NOT"><span>NOT</span><button class="info-btn" data-info="입력 반전">+</button></div>
-                <div class="gate-item" draggable="true" data-type="OUTPUT"><span>OUTPUT</span><button class="info-btn" data-info="최종 출력">+</button></div>
+                <div class="gate-item" draggable="true" data-type="INPUT">
+                    <span>INPUT</span><button class="info-btn" data-info="입력 신호 (X<sub>n</sub>)">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="AND">
+                    <span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="OR">
+                    <span>OR</span><button class="info-btn" data-info="입력 중 하나라도 1이면 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="XOR">
+                    <span>XOR</span><button class="info-btn" data-info="입력이 서로 다를 때만 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="NOT">
+                    <span>NOT</span><button class="info-btn" data-info="입력 반전">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="OUTPUT">
+                    <span>OUTPUT</span><button class="info-btn" data-info="최종 출력 (Y<sub>n</sub>)">+</button>
+                </div>
+                
+                <!-- 툴팁 박스 -->
+                <div id="tooltip-box" class="tooltip-box hidden">
+                    <button id="close-tooltip-btn" class="close-btn">&times;</button>
+                    <p id="tooltip-desc"></p>
+                </div>
             </aside>
+
+            <!-- 줌 컨트롤 -->
+            <div class="zoom-controls">
+                <button id="zoom-in">+</button>
+                <input type="range" id="zoom-slider" min="0.5" max="2" step="0.1" value="1">
+                <button id="zoom-out">-</button>
+            </div>
+
             <main class="canvas-area" id="circuit-canvas">
-                <svg id="wire-layer"></svg>
-                <div id="gate-layer"></div>
+                <div id="canvas-inner">
+                    <svg id="wire-layer"></svg>
+                    <div id="gate-layer"></div>
+                </div>
                 <div id="table-view-container" class="hidden">
                     <table id="truth-table"></table>
                 </div>
             </main>
         </div>
-        <div class="boolean-equation">수식: <span id="equation-display">대기 중...</span></div>
+        <div class="boolean-equation"><span id="equation-display">대기 중...</span></div>
     </section>
 
     <!-- 세부 페이지 2: 게이트 사전 -->
     <section id="page-2" class="page">
         <header>
             <h2>논리 게이트 사전</h2>
-            <button class="open-menu-btn">메뉴</button>
+            <button class="open-menu-btn hamburger-btn">&#9776;</button>
         </header>
         <div class="card-grid">
-            <div class="gate-card info-trigger" data-info="AND: 곱연산. 직렬 스위치와 같습니다."><h3>AND</h3></div>
-            <div class="gate-card info-trigger" data-info="OR: 합연산. 병렬 스위치와 같습니다."><h3>OR</h3></div>
-            <div class="gate-card info-trigger" data-info="NOT: 반전. 입력이 1이면 0, 0이면 1."><h3>NOT</h3></div>
-            <div class="gate-card info-trigger" data-info="XOR: 배타적 논리합. 다를 때만 참."><h3>XOR</h3></div>
+            <div class="gate-card">
+                <h3>AND</h3>
+                <div class="desc-box">AND: 곱연산. 직렬 스위치와 같습니다. 모든 입력이 참이어야 결과가 참이 됩니다.</div>
+            </div>
+            <div class="gate-card">
+                <h3>OR</h3>
+                <div class="desc-box">OR: 합연산. 병렬 스위치와 같습니다. 하나라도 참이면 결과가 참이 됩니다.</div>
+            </div>
+            <div class="gate-card">
+                <h3>NOT</h3>
+                <div class="desc-box">NOT: 반전. 입력이 1이면 0, 0이면 1로 뒤집습니다.</div>
+            </div>
+            <div class="gate-card">
+                <h3>XOR</h3>
+                <div class="desc-box">XOR: 배타적 논리합. 입력값이 서로 다를 때만 참을 출력합니다.</div>
+            </div>
         </div>
     </section>
 
@@ -80,23 +120,13 @@
     <section id="page-3" class="page">
         <header>
             <h2>레벨 챌린지</h2>
-            <button class="open-menu-btn">메뉴</button>
+            <button class="open-menu-btn hamburger-btn">&#9776;</button>
         </header>
         <div id="level-grid" class="card-grid"></div>
     </section>
 
-    <!-- 공통 모달 -->
-    <div id="info-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button id="close-modal-btn" class="close-btn">&times;</button>
-            <h3 id="modal-title">설명</h3>
-            <p id="modal-desc">내용</p>
-            <div id="level-result-display" class="hidden"></div>
-        </div>
-    </div>
-
-    <script src="SimulatorEngine.js"></script>
-    <script src="SimulatorUI.js"></script>
+    <script src="simulator-engine.js"></script>
+    <script src="simulator-ui.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
