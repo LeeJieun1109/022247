@@ -3,14 +3,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvasInner = document.getElementById('canvas-inner');
     const gateLayer = document.getElementById('gate-layer');
     const wireLayer = document.getElementById('wire-layer');
+    const trashCan = document.getElementById('trash-can');
     
     let nodes = [], wires = [];
     let inputCount = 1, outputCount = 1, gateCount = 1;
     let draggedType = null, activeGate = null;
     let isWiring = false, wireStartPort = null, currentLine = null;
+    
+    // 확대/축소 및 이동(Panning) 변수
     let currentZoom = 1;
+    let isPanning = false;
+    let panX = 0, panY = 0;
+    let startMouseX = 0, startMouseY = 0;
 
-    // 드래그 앤 드롭
+    function applyTransform() {
+        canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+    }
+
+    // --- 패닝(Panning) 이벤트 처리 ---
+    canvas.addEventListener('mousedown', (e) => {
+        // 게이트, 포트, 컨트롤 버튼, 휴지통 클릭 시 패닝 동작 제외
+        if (e.target.closest('.canvas-gate') || 
+            e.target.classList.contains('port') || 
+            e.target.closest('.zoom-controls') || 
+            e.target.closest('.trash-can')) return;
+        
+        isPanning = true;
+        startMouseX = e.clientX - panX;
+        startMouseY = e.clientY - panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - startMouseX;
+        panY = e.clientY - startMouseY;
+        applyTransform();
+    });
+
+    window.addEventListener('mouseup', () => { isPanning = false; });
+
+    // 드래그 앤 드롭으로 신규 게이트 생성
     document.querySelectorAll('.gate-toolbar .gate-item').forEach(item => {
         item.addEventListener('dragstart', (e) => draggedType = e.currentTarget.dataset.type);
     });
@@ -54,50 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 줌 기능
     const zoomSlider = document.getElementById('zoom-slider');
-    function applyZoom() {
-        canvasInner.style.transform = `scale(${currentZoom})`;
-    }
-    document.getElementById('zoom-in').addEventListener('click', () => { currentZoom = Math.min(2, currentZoom + 0.1); zoomSlider.value = currentZoom; applyZoom(); });
-    document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(0.5, currentZoom - 0.1); zoomSlider.value = currentZoom; applyZoom(); });
-    zoomSlider.addEventListener('input', (e) => { currentZoom = parseFloat(e.target.value); applyZoom(); });
-
-    // 화면 이동(Pan) 상태 변수
-    let isPanning = false;
-    let panX = 0, panY = 0;
-    let startPanX = 0, startPanY = 0;
-
-    // 통합 Transform 적용 함수 (이동 + 확대)
-    function applyTransform() {
-        canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
-    }
-
-    // 줌 기능 수정 (기존 applyZoom 대신 applyTransform 호출로 변경)
     document.getElementById('zoom-in').addEventListener('click', () => { currentZoom = Math.min(2, currentZoom + 0.1); zoomSlider.value = currentZoom; applyTransform(); });
     document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(0.5, currentZoom - 0.1); zoomSlider.value = currentZoom; applyTransform(); });
     zoomSlider.addEventListener('input', (e) => { currentZoom = parseFloat(e.target.value); applyTransform(); });
 
-    // --- 화면 패닝(드래그 이동) 이벤트 추가 ---
-    canvas.addEventListener('mousedown', (e) => {
-        // 게이트나 포트를 클릭한 경우는 이동하지 않음
-        if (e.target !== canvas && e.target !== canvasInner && e.target !== wireLayer) return;
-        
-        isPanning = true;
-        startPanX = e.clientX - panX;
-        startPanY = e.clientY - panY;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isPanning) return;
-        panX = e.clientX - startPanX;
-        panY = e.clientY - startPanY;
-        applyTransform();
-    });
-
-    const stopPanning = () => { isPanning = false; };
-    canvas.addEventListener('mouseup', stopPanning);
-    canvas.addEventListener('mouseleave', stopPanning);
-    
-    // SVG 게이트 반환 함수 (아웃라인만, 내부 흰색)
+    // SVG 게이트 반환
     function getGateSVG(type) {
         if(type === 'AND') return `<svg class="gate-svg" viewBox="0 0 60 40"><path d="M5,5 L35,5 A15,15 0 0,1 35,35 L5,35 Z" fill="white" stroke="black" stroke-width="2"/></svg>`;
         if(type === 'OR') return `<svg class="gate-svg" viewBox="0 0 60 40"><path d="M5,5 Q25,5 45,20 Q25,35 5,35 Q15,20 5,5 Z" fill="white" stroke="black" stroke-width="2"/></svg>`;
@@ -117,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         nodes.forEach(n => {
             const el = document.createElement('div');
             el.className = 'canvas-gate';
-            el.style.left = `${n.x - 30}px`; el.style.top = `${n.y - 20}px`;
+            el.style.left = `${n.x - 30}px`; 
+            el.style.top = `${n.y - 20}px`;
             el.dataset.id = n.id;
 
             if (n.type === 'INPUT' || n.type === 'OUTPUT') {
@@ -128,23 +122,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.innerHTML = getGateSVG(n.type);
             }
 
-            // 포트 추가 (SVG 60x40 기준)
+            // 포트 배치
             if (n.type !== 'INPUT') {
                 const p1 = document.createElement('div'); p1.className = 'port port-in'; p1.dataset.node = n.id;
-                p1.style.top = n.type === 'NOT' || n.type === 'OUTPUT' ? '16px' : '8px';
+                p1.style.top = (n.type === 'NOT' || n.type === 'OUTPUT') ? '15px' : '8px';
                 el.appendChild(p1);
                 if (n.type !== 'NOT' && n.type !== 'OUTPUT') {
                     const p2 = document.createElement('div'); p2.className = 'port port-in'; p2.dataset.node = n.id;
-                    p2.style.top = '24px';
+                    p2.style.top = '23px';
                     el.appendChild(p2);
                 }
             }
             if (n.type !== 'OUTPUT') {
                 const po = document.createElement('div'); po.className = 'port port-out'; po.dataset.node = n.id;
-                po.style.top = '16px';
+                po.style.top = '15px';
                 el.appendChild(po);
             }
 
+            // 게이트 드래그 이동 및 삭제 감지
             el.addEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('port')) return;
                 activeGate = n;
@@ -153,20 +148,56 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             gateLayer.appendChild(el);
         });
+
         document.querySelectorAll('.port').forEach(p => p.addEventListener('mousedown', onPortClick));
-        drawWires(); updateEquation();
+        drawWires(); 
+        updateEquation();
+    }
+
+    // 마우스 좌표가 휴지통 영역 위에 있는지 판별
+    function isOverTrashCan(e) {
+        const rect = trashCan.getBoundingClientRect();
+        return (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+        );
     }
 
     function onGateMouseMove(e) {
         if (!activeGate) return;
         activeGate.x += e.movementX / currentZoom;
         activeGate.y += e.movementY / currentZoom;
+
+        // 휴지통 오버 시 효과 적용
+        if (isOverTrashCan(e)) {
+            trashCan.classList.add('active');
+        } else {
+            trashCan.classList.remove('active');
+        }
+
         renderCanvas();
     }
-    function onGateMouseUp() {
+
+    function onGateMouseUp(e) {
+        if (activeGate && isOverTrashCan(e)) {
+            deleteGate(activeGate.id);
+        }
+        trashCan.classList.remove('active');
         activeGate = null;
         document.removeEventListener('mousemove', onGateMouseMove);
         document.removeEventListener('mouseup', onGateMouseUp);
+    }
+
+    // 객체(게이트/입출력) 삭제 함수
+    function deleteGate(id) {
+        nodes = nodes.filter(n => n.id !== id);
+        wires = wires.filter(w => w.from !== id && w.to !== id);
+        nodes.forEach(n => {
+            n.logicNode.inputs = n.logicNode.inputs.filter(inNode => inNode.id !== id);
+        });
+        renderCanvas();
     }
 
     // 선 연결 로직
@@ -175,52 +206,84 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isWiring && e.target.classList.contains('port-out')) {
             isWiring = true; wireStartPort = e.target;
             currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            currentLine.setAttribute('stroke', '#1b263b'); currentLine.setAttribute('stroke-width', '2');
+            currentLine.setAttribute('stroke', '#1b263b'); 
+            currentLine.setAttribute('stroke-width', '2');
             wireLayer.appendChild(currentLine);
             document.addEventListener('mousemove', drawTempWire);
             document.addEventListener('mouseup', finishWiring);
         }
     }
+
     function drawTempWire(e) {
         if (!isWiring) return;
         const startRect = wireStartPort.getBoundingClientRect();
         const canvasRect = canvasInner.getBoundingClientRect();
-        currentLine.setAttribute('x1', (startRect.left - canvasRect.left + 4) / currentZoom);
-        currentLine.setAttribute('y1', (startRect.top - canvasRect.top + 4) / currentZoom);
+        currentLine.setAttribute('x1', (startRect.left - canvasRect.left + 5) / currentZoom);
+        currentLine.setAttribute('y1', (startRect.top - canvasRect.top + 5) / currentZoom);
         currentLine.setAttribute('x2', (e.clientX - canvasRect.left) / currentZoom);
         currentLine.setAttribute('y2', (e.clientY - canvasRect.top) / currentZoom);
     }
+
     function finishWiring(e) {
-        document.removeEventListener('mousemove', drawTempWire); document.removeEventListener('mouseup', finishWiring);
+        document.removeEventListener('mousemove', drawTempWire); 
+        document.removeEventListener('mouseup', finishWiring);
+        
         let targetPort = document.elementFromPoint(e.clientX, e.clientY);
         if (targetPort && targetPort.classList.contains('port-in')) {
-            wires.push({ from: wireStartPort.dataset.node, to: targetPort.dataset.node });
-            const fromNode = nodes.find(n => n.id === wireStartPort.dataset.node).logicNode;
-            const toNode = nodes.find(n => n.id === targetPort.dataset.node).logicNode;
+            const fromId = wireStartPort.dataset.node;
+            const toId = targetPort.dataset.node;
+            wires.push({ from: fromId, to: toId });
+            
+            const fromNode = nodes.find(n => n.id === fromId).logicNode;
+            const toNode = nodes.find(n => n.id === toId).logicNode;
             toNode.inputs.push(fromNode);
         }
         isWiring = false; wireStartPort = null; if (currentLine) currentLine.remove();
         renderCanvas();
     }
+
+    // 선 그리기 및 클릭 삭제 이벤트 연결
     function drawWires() {
         wireLayer.innerHTML = '';
         const canvasRect = canvasInner.getBoundingClientRect();
-        wires.forEach(w => {
+        
+        wires.forEach((w) => {
             const outDom = document.querySelector(`.canvas-gate[data-id="${w.from}"] .port-out`);
             const inDoms = document.querySelectorAll(`.canvas-gate[data-id="${w.to}"] .port-in`);
             const inDom = inDoms[0]; 
+            
             if (outDom && inDom) {
                 const oRect = outDom.getBoundingClientRect();
                 const iRect = inDom.getBoundingClientRect();
+                
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', (oRect.left - canvasRect.left + 4) / currentZoom);
-                line.setAttribute('y1', (oRect.top - canvasRect.top + 4) / currentZoom);
-                line.setAttribute('x2', (iRect.left - canvasRect.left + 4) / currentZoom);
-                line.setAttribute('y2', (iRect.top - canvasRect.top + 4) / currentZoom);
-                line.setAttribute('stroke', '#415a77'); line.setAttribute('stroke-width', '2');
+                line.setAttribute('class', 'wire-line');
+                line.setAttribute('x1', (oRect.left - canvasRect.left + 5) / currentZoom);
+                line.setAttribute('y1', (oRect.top - canvasRect.top + 5) / currentZoom);
+                line.setAttribute('x2', (iRect.left - canvasRect.left + 5) / currentZoom);
+                line.setAttribute('y2', (iRect.top - canvasRect.top + 5) / currentZoom);
+                line.setAttribute('stroke', '#415a77'); 
+                line.setAttribute('stroke-width', '2.5');
+                
+                // 클릭 시 해당 선 삭제
+                line.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteWire(w);
+                });
+
                 wireLayer.appendChild(line);
             }
         });
+    }
+
+    // 단일 선 삭제 함수
+    function deleteWire(wireToDelete) {
+        wires = wires.filter(w => !(w.from === wireToDelete.from && w.to === wireToDelete.to));
+        const toNode = nodes.find(n => n.id === wireToDelete.to);
+        if (toNode) {
+            toNode.logicNode.inputs = toNode.logicNode.inputs.filter(inNode => inNode.id !== wireToDelete.from);
+        }
+        renderCanvas();
     }
 
     function updateEquation() {
@@ -241,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableContainer = document.getElementById('table-view-container');
     const truthTable = document.getElementById('truth-table');
     let isTableMode = false;
+
     toggleBtn.addEventListener('click', () => {
         isTableMode = !isTableMode;
         tableContainer.classList.toggle('hidden', !isTableMode);
