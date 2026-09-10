@@ -41,7 +41,7 @@ button:hover { background-color: var(--secondary-color); }
 .subtitle { margin-bottom: 3rem; font-size: 1.5rem; font-weight: bold; color: var(--secondary-color); }
 .menu-buttons { display: flex; gap: 1.5rem; justify-content: center; }
 
-/* 워크스페이스 레이아웃 (수식 박스와 겹치지 않게 높이 자동 계산) */
+/* 워크스페이스 레이아웃 */
 .workspace { display: flex; height: calc(75vh - 80px); gap: 1rem; position: relative; }
 .gate-toolbar { position: relative; width: 250px; background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 10; }
 .gate-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 1rem; margin-bottom: 1rem; border-radius: 8px; font-weight: bold; cursor: grab; font-size: 1.2rem; transition: background 0.3s; }
@@ -60,7 +60,7 @@ button:hover { background-color: var(--secondary-color); }
 .zoom-controls button { width: 36px; height: 36px; border-radius: 8px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; }
 .zoom-controls input[type="range"] { writing-mode: vertical-lr; direction: rtl; appearance: slider-vertical; height: 80px; margin: 0.3rem 0; }
 
-/* 캔버스 및 레이어 설정 (패닝이 정상 작동하도록 pointer-events 제어) */
+/* 캔버스 및 레이어 설정 */
 .canvas-area { flex-grow: 1; background: white; border-radius: 12px; border: 2px dashed var(--secondary-color); position: relative; overflow: hidden; cursor: grab; }
 .canvas-area:active { cursor: grabbing; }
 
@@ -68,7 +68,7 @@ button:hover { background-color: var(--secondary-color); }
 #wire-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 #gate-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
 
-/* 게이트 스타일 및 마우스오버 강조 */
+/* 게이트 스타일 */
 .canvas-gate { position: absolute; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; pointer-events: auto; transition: transform 0.1s ease; }
 .canvas-gate:hover { transform: scale(1.08); }
 .canvas-gate:hover .gate-svg path { stroke: var(--highlight-color); stroke-width: 3px; }
@@ -78,17 +78,33 @@ button:hover { background-color: var(--secondary-color); }
 .gate-svg { width: 60px; height: 40px; }
 .gate-svg path { transition: stroke 0.2s, stroke-width 0.2s; }
 
+/* 입력값 토글 배지 */
+.val-badge {
+    font-size: 0.9rem;
+    background: var(--secondary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-left: 4px;
+    user-select: none;
+    transition: background 0.2s;
+}
+.val-badge:hover {
+    background: var(--highlight-color);
+}
+
 /* 포트 스타일 */
 .port { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: black; cursor: crosshair; pointer-events: auto; transition: transform 0.2s, background 0.2s; }
 .port:hover { transform: scale(1.4); background: var(--highlight-color); }
 .port-in { left: -5px; }
 .port-out { right: -5px; }
 
-/* 선(Wire) 마우스오버 강조 효과 */
+/* 선(Wire) 스타일 */
 .wire-line { cursor: pointer; pointer-events: stroke; transition: stroke 0.2s, stroke-width 0.2s; }
 .wire-line:hover { stroke: var(--highlight-color) !important; stroke-width: 4px !important; }
 
-/* 휴지통 아이콘 (배경 무색, 아이콘 회색) */
+/* 휴지통 아이콘 */
 .trash-can {
     position: absolute;
     right: 1.5rem;
@@ -114,7 +130,7 @@ button:hover { background-color: var(--secondary-color); }
     transform: scale(1.15);
 }
 
-/* 수식 표시 영역 (독립된 블록으로 배치하여 겹침 방지) */
+/* 수식 표시 영역 */
 .boolean-equation {
     margin-top: 1rem;
     background: var(--primary-color);
