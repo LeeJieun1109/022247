@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 패닝(Panning) 이벤트 처리 ---
     canvas.addEventListener('mousedown', (e) => {
-        // 게이트, 포트, 컨트롤 버튼, 휴지통 클릭 시 패닝 동작 제외
         if (e.target.closest('.canvas-gate') || 
             e.target.classList.contains('port') || 
             e.target.closest('.zoom-controls') || 
@@ -117,31 +116,54 @@ document.addEventListener('DOMContentLoaded', () => {
             if (n.type === 'INPUT' || n.type === 'OUTPUT') {
                 el.classList.add('gate-text');
                 const parts = n.id.split('_');
-                el.innerHTML = `<i>${parts[0]}<sub>${parts[1]}</sub></i>`;
+                const valDisplay = n.type === 'INPUT' 
+                    ? ` <span class="val-badge" title="클릭하여 값 변경">${n.logicNode.value}</span>` 
+                    : '';
+                el.innerHTML = `<i>${parts[0]}<sub>${parts[1]}</sub></i>${valDisplay}`;
+                
+                if (n.type === 'INPUT') {
+                    const badge = el.querySelector('.val-badge');
+                    if (badge) {
+                        badge.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            n.logicNode.value = n.logicNode.value === 0 ? 1 : 0;
+                            renderCanvas();
+                        });
+                    }
+                }
             } else {
                 el.innerHTML = getGateSVG(n.type);
             }
 
-            // 포트 배치
+            // 포트 배치 및 포트 인덱스 추가
             if (n.type !== 'INPUT') {
-                const p1 = document.createElement('div'); p1.className = 'port port-in'; p1.dataset.node = n.id;
+                const p1 = document.createElement('div'); 
+                p1.className = 'port port-in'; 
+                p1.dataset.node = n.id;
+                p1.dataset.portIndex = '0';
                 p1.style.top = (n.type === 'NOT' || n.type === 'OUTPUT') ? '15px' : '8px';
                 el.appendChild(p1);
+
                 if (n.type !== 'NOT' && n.type !== 'OUTPUT') {
-                    const p2 = document.createElement('div'); p2.className = 'port port-in'; p2.dataset.node = n.id;
+                    const p2 = document.createElement('div'); 
+                    p2.className = 'port port-in'; 
+                    p2.dataset.node = n.id;
+                    p2.dataset.portIndex = '1';
                     p2.style.top = '23px';
                     el.appendChild(p2);
                 }
             }
             if (n.type !== 'OUTPUT') {
-                const po = document.createElement('div'); po.className = 'port port-out'; po.dataset.node = n.id;
+                const po = document.createElement('div'); 
+                po.className = 'port port-out'; 
+                po.dataset.node = n.id;
                 po.style.top = '15px';
                 el.appendChild(po);
             }
 
             // 게이트 드래그 이동 및 삭제 감지
             el.addEventListener('mousedown', (e) => {
-                if (e.target.classList.contains('port')) return;
+                if (e.target.classList.contains('port') || e.target.classList.contains('val-badge')) return;
                 activeGate = n;
                 document.addEventListener('mousemove', onGateMouseMove);
                 document.addEventListener('mouseup', onGateMouseUp);
@@ -154,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateEquation();
     }
 
-    // 마우스 좌표가 휴지통 영역 위에 있는지 판별
     function isOverTrashCan(e) {
         const rect = trashCan.getBoundingClientRect();
         return (
@@ -170,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activeGate.x += e.movementX / currentZoom;
         activeGate.y += e.movementY / currentZoom;
 
-        // 휴지통 오버 시 효과 적용
         if (isOverTrashCan(e)) {
             trashCan.classList.add('active');
         } else {
@@ -190,24 +210,34 @@ document.addEventListener('DOMContentLoaded', () => {
         document.removeEventListener('mouseup', onGateMouseUp);
     }
 
-    // 객체(게이트/입출력) 삭제 함수
     function deleteGate(id) {
         nodes = nodes.filter(n => n.id !== id);
         wires = wires.filter(w => w.from !== id && w.to !== id);
         nodes.forEach(n => {
-            n.logicNode.inputs = n.logicNode.inputs.filter(inNode => inNode.id !== id);
+            n.logicNode.inputs = n.logicNode.inputs.filter(inNode => inNode && inNode.id !== id);
         });
         renderCanvas();
+    }
+
+    function getPortCenter(portEl) {
+        const portRect = portEl.getBoundingClientRect();
+        const canvasRect = canvasInner.getBoundingClientRect();
+        return {
+            x: (portRect.left + portRect.width / 2 - canvasRect.left) / currentZoom,
+            y: (portRect.top + portRect.height / 2 - canvasRect.top) / currentZoom
+        };
     }
 
     // 선 연결 로직
     function onPortClick(e) {
         e.stopPropagation();
         if (!isWiring && e.target.classList.contains('port-out')) {
-            isWiring = true; wireStartPort = e.target;
+            isWiring = true; 
+            wireStartPort = e.target;
             currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             currentLine.setAttribute('stroke', '#1b263b'); 
             currentLine.setAttribute('stroke-width', '2');
+            currentLine.style.pointerEvents = 'none'; // 포트 감지 간섭 방지
             wireLayer.appendChild(currentLine);
             document.addEventListener('mousemove', drawTempWire);
             document.addEventListener('mouseup', finishWiring);
@@ -215,11 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function drawTempWire(e) {
-        if (!isWiring) return;
-        const startRect = wireStartPort.getBoundingClientRect();
+        if (!isWiring || !currentLine) return;
+        const startPos = getPortCenter(wireStartPort);
         const canvasRect = canvasInner.getBoundingClientRect();
-        currentLine.setAttribute('x1', (startRect.left - canvasRect.left + 5) / currentZoom);
-        currentLine.setAttribute('y1', (startRect.top - canvasRect.top + 5) / currentZoom);
+        currentLine.setAttribute('x1', startPos.x);
+        currentLine.setAttribute('y1', startPos.y);
         currentLine.setAttribute('x2', (e.clientX - canvasRect.left) / currentZoom);
         currentLine.setAttribute('y2', (e.clientY - canvasRect.top) / currentZoom);
     }
@@ -232,40 +262,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetPort && targetPort.classList.contains('port-in')) {
             const fromId = wireStartPort.dataset.node;
             const toId = targetPort.dataset.node;
-            wires.push({ from: fromId, to: toId });
+            const toPortIndex = parseInt(targetPort.dataset.portIndex || '0', 10);
+            
+            // 동일 대상 포트 연결 대체
+            wires = wires.filter(w => !(w.to === toId && w.toPortIndex === toPortIndex));
+            wires.push({ from: fromId, to: toId, toPortIndex });
             
             const fromNode = nodes.find(n => n.id === fromId).logicNode;
             const toNode = nodes.find(n => n.id === toId).logicNode;
-            toNode.inputs.push(fromNode);
+            
+            toNode.inputs[toPortIndex] = fromNode;
         }
-        isWiring = false; wireStartPort = null; if (currentLine) currentLine.remove();
+        isWiring = false; 
+        wireStartPort = null; 
+        if (currentLine) currentLine.remove();
         renderCanvas();
     }
 
-    // 선 그리기 및 클릭 삭제 이벤트 연결
     function drawWires() {
         wireLayer.innerHTML = '';
-        const canvasRect = canvasInner.getBoundingClientRect();
         
         wires.forEach((w) => {
             const outDom = document.querySelector(`.canvas-gate[data-id="${w.from}"] .port-out`);
             const inDoms = document.querySelectorAll(`.canvas-gate[data-id="${w.to}"] .port-in`);
-            const inDom = inDoms[0]; 
+            const inDom = inDoms[w.toPortIndex || 0] || inDoms[0]; 
             
             if (outDom && inDom) {
-                const oRect = outDom.getBoundingClientRect();
-                const iRect = inDom.getBoundingClientRect();
+                const startPos = getPortCenter(outDom);
+                const endPos = getPortCenter(inDom);
                 
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 line.setAttribute('class', 'wire-line');
-                line.setAttribute('x1', (oRect.left - canvasRect.left + 5) / currentZoom);
-                line.setAttribute('y1', (oRect.top - canvasRect.top + 5) / currentZoom);
-                line.setAttribute('x2', (iRect.left - canvasRect.left + 5) / currentZoom);
-                line.setAttribute('y2', (iRect.top - canvasRect.top + 5) / currentZoom);
+                line.setAttribute('x1', startPos.x);
+                line.setAttribute('y1', startPos.y);
+                line.setAttribute('x2', endPos.x);
+                line.setAttribute('y2', endPos.y);
                 line.setAttribute('stroke', '#415a77'); 
                 line.setAttribute('stroke-width', '2.5');
                 
-                // 클릭 시 해당 선 삭제
                 line.addEventListener('click', (e) => {
                     e.stopPropagation();
                     deleteWire(w);
@@ -276,12 +310,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 단일 선 삭제 함수
     function deleteWire(wireToDelete) {
-        wires = wires.filter(w => !(w.from === wireToDelete.from && w.to === wireToDelete.to));
+        wires = wires.filter(w => !(w.from === wireToDelete.from && w.to === wireToDelete.to && w.toPortIndex === wireToDelete.toPortIndex));
         const toNode = nodes.find(n => n.id === wireToDelete.to);
         if (toNode) {
-            toNode.logicNode.inputs = toNode.logicNode.inputs.filter(inNode => inNode.id !== wireToDelete.from);
+            delete toNode.logicNode.inputs[wireToDelete.toPortIndex];
+            toNode.logicNode.inputs = toNode.logicNode.inputs.filter(Boolean);
         }
         renderCanvas();
     }
@@ -292,7 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (outputs.length > 0) {
             eqSpan.innerHTML = outputs.map(o => {
                 const parts = o.id.split('_');
-                return `<i>${parts[0]}<sub>${parts[1]}</sub></i> = ${o.logicNode.getExpression()}`;
+                const expr = o.logicNode.getExpression();
+                const evalVal = o.logicNode.evaluate();
+                return `<i>${parts[0]}<sub>${parts[1]}</sub></i> = ${expr} (현재 값: ${evalVal})`;
             }).join(' / ');
         } else {
             eqSpan.innerText = '출력(OUTPUT) 게이트를 연결하세요.';
@@ -316,9 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 truthTable.innerHTML = '<tr><td>입력과 출력이 모두 필요합니다.</td></tr>'; return;
             }
             const data = generateTruthTable(inputs, outputs);
-            let html = '<tr>' + inputs.map(i => `<th>${i.id.replace('_', '<sub>')}</sub></th>`).join('') + outputs.map(o => `<th>${o.id.replace('_', '<sub>')}</sub> (결과)</th>`).join('') + '</tr>';
+            let html = '<tr>' + 
+                inputs.map(i => {
+                    const parts = i.id.split('_');
+                    return `<th>${parts[0]}<sub>${parts[1]}</sub></th>`;
+                }).join('') + 
+                outputs.map(o => {
+                    const parts = o.id.split('_');
+                    return `<th>${parts[0]}<sub>${parts[1]}</sub> (결과)</th>`;
+                }).join('') + '</tr>';
+            
             data.forEach(row => {
-                html += '<tr>' + inputs.map(i => `<td>${row[i.id]}</td>`).join('') + outputs.map(o => `<td style="font-weight:bold;">${row[o.id]}</td>`).join('') + '</tr>';
+                html += '<tr>' + 
+                    inputs.map(i => `<td>${row[i.id]}</td>`).join('') + 
+                    outputs.map(o => `<td style="font-weight:bold;">${row[o.id]}</td>`).join('') + 
+                    '</tr>';
             });
             truthTable.innerHTML = html;
         }
