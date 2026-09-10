@@ -1,4 +1,3 @@
-// (기존 구조와 동일하나 출력 시 아래첨자를 수식 텍스트에도 반영하기 위해 소폭 수정)
 class LogicNode {
     constructor(id, type) {
         this.id = id;
@@ -6,10 +5,16 @@ class LogicNode {
         this.inputs = [];
         this.value = 0;
     }
-    evaluate() {
+
+    evaluate(visited = new Set()) {
+        if (visited.has(this.id)) return 0; // 순환 회로 연결 시 무한 재귀 방지
+        visited.add(this.id);
+
         if (this.type === 'INPUT') return this.value;
-        const vals = this.inputs.map(n => n.evaluate());
+        
+        const vals = this.inputs.filter(Boolean).map(n => n.evaluate(new Set(visited)));
         if (vals.length === 0) return 0;
+
         switch (this.type) {
             case 'AND': return vals.reduce((a, b) => a & b, 1);
             case 'OR':  return vals.reduce((a, b) => a | b, 0);
@@ -19,14 +24,21 @@ class LogicNode {
             default: return 0;
         }
     }
-    getExpression() {
+
+    getExpression(visited = new Set()) {
+        if (visited.has(this.id)) return '...'; // 순환 회로 연결 시 무한 재귀 방지
+        visited.add(this.id);
+
         const formatId = (idStr) => {
             const parts = idStr.split('_');
             return `<i>${parts[0]}<sub>${parts[1]}</sub></i>`;
         };
+
         if (this.type === 'INPUT') return formatId(this.id);
-        if (this.inputs.length === 0) return '0';
-        const exprs = this.inputs.map(n => n.getExpression());
+        const validInputs = this.inputs.filter(Boolean);
+        if (validInputs.length === 0) return '0';
+
+        const exprs = validInputs.map(n => n.getExpression(new Set(visited)));
         switch (this.type) {
             case 'AND': return `(${exprs.join(' · ')})`;
             case 'OR':  return `(${exprs.join(' + ')})`;
@@ -37,6 +49,7 @@ class LogicNode {
         }
     }
 }
+
 function generateTruthTable(inputNodes, outputNodes) {
     if (inputNodes.length === 0) return [];
     const numRows = Math.pow(2, inputNodes.length);
