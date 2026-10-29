@@ -6,245 +6,124 @@
     --secondary-color: #415a77; 
     --text-color: #333333;
     --text-light: #ffffff;
-    --highlight-color: #e63946;
-    /* 수정 5: 제미나이 톤 호버 파란색 정의 */
     --hover-blue: #4a90e2; 
+    --danger: #e63946;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard Variable', sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; font-size: 1.1rem; }
 
 .page { display: none; min-height: 100vh; padding: 2rem; }
-.page.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Header Elements */
 header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem; margin-bottom: 1.5rem; }
 .header-controls { display: flex; align-items: center; gap: 0.8rem; }
-.header-controls button {
-    height: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 1.5rem;
-    margin: 0;
-    line-height: 1;
-    box-sizing: border-box;
-}
+.header-controls button, .back-arrow-btn { height: 48px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
+.hamburger-btn { width: 48px !important; font-size: 1.5rem; padding: 0 !important; }
+.back-arrow-btn { padding: 0 1.2rem; font-size: 1.2rem; background: white; color: var(--primary-color); border: 2px solid var(--primary-color); margin-right: 1rem; }
 
-/* 수정 12: 메뉴 버튼을 정사각형으로 설정 */
-.hamburger-btn { 
-    width: 48px !important; 
-    height: 48px !important; 
-    font-size: 1.5rem; 
-    padding: 0 !important; 
-}
-
-/* 수정 14: 뒤로가기 화살표 버튼 */
-.back-arrow-btn {
-    height: 48px;
-    padding: 0 1.2rem;
-    font-size: 1.2rem;
-    background: white;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    margin-right: 1rem;
-}
-
-button { cursor: pointer; border: none; border-radius: 8px; background-color: var(--primary-color); color: var(--text-light); font-size: 1.1rem; font-weight: 600; transition: 0.2s; }
-
-/* 수정 5: 마우스 오버 시 색상을 파란색으로 변경 */
+button { cursor: pointer; border: none; border-radius: 8px; background-color: var(--primary-color); color: var(--text-light); font-size: 1.1rem; font-weight: 600; transition: background 0.2s; padding: 0 1.5rem;}
 button:hover { background-color: var(--hover-blue) !important; color: white !important; }
 
+/* Main Menu */
 #main-page.active { display: flex; justify-content: center; align-items: center; }
 .content-box { text-align: center; background: white; padding: 5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 80%; max-width: 800px; }
 .content-box h1 { margin-bottom: 1rem; color: var(--primary-color); font-size: 3rem; }
-
-/* 수정 2: '10925 이지은B' 크기 줄임 */
 .subtitle { margin-bottom: 3rem; font-size: 1rem; font-weight: bold; color: var(--secondary-color); }
-
-/* 수정 3: 버튼 크기 늘림, 글씨 크기 유지 */
 .menu-buttons { display: flex; gap: 1.5rem; justify-content: center; }
-.menu-buttons .nav-btn {
-    padding: 1.2rem 2.5rem;
-    font-size: 1.1rem;
-}
+.menu-buttons .nav-btn { padding: 1.2rem 2.5rem; font-size: 1.1rem; height: auto; }
 
+/* Workspace & Toolbar */
 .workspace { display: flex; height: calc(75vh - 80px); gap: 1rem; position: relative; }
 .gate-toolbar { position: relative; width: 250px; background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 10; overflow-y: auto;}
-
-/* 수정 5: 호버 시 파란색 변경 */
-.gate-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 0.8rem 1rem; margin-bottom: 0.8rem; border-radius: 8px; font-weight: bold; cursor: grab; font-size: 1.1rem; transition: background 0.2s; }
+.gate-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 0.8rem 1rem; margin-bottom: 0.8rem; border-radius: 8px; font-weight: bold; cursor: grab; transition: background 0.2s; }
 .gate-item:hover { background: #e8f2ff; color: var(--hover-blue); }
+.info-btn { padding: 0 0.4rem; height: 28px; border-radius: 50%; font-size: 1rem; }
 
-.info-btn { padding: 0.3rem 0.8rem; border-radius: 50%; font-size: 1rem; }
-
+/* Tooltips */
 .dim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 100; }
 .dim-overlay.active { display: block; }
-.tooltip-box { position: absolute; left: 105%; top: 0; width: 250px; background: white; border: 2px solid var(--primary-color); border-radius: 8px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 201; font-size: 1.2rem; }
-.tooltip-box.hidden { display: none; }
-.tooltip-box .close-btn { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 1.5rem; background: none; color: black; padding: 0; width: auto; height: auto; }
+.tooltip-box { position: absolute; left: 105%; top: 0; width: 250px; background: white; border: 2px solid var(--primary-color); border-radius: 8px; padding: 1.5rem; z-index: 201; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.tooltip-box .close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; color: black; font-size: 1.5rem; padding: 0; width: auto; height: auto;}
 
-.zoom-controls { position: absolute; right: 1.5rem; top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: #e0e0e0; padding: 0.8rem; border-radius: 12px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.zoom-controls button { width: 36px; height: 36px; border-radius: 8px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; }
+/* Canvas & Gates */
+.zoom-controls { position: absolute; right: 1.5rem; top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.9); padding: 0.8rem; border-radius: 12px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+.zoom-controls button { width: 36px; height: 36px; padding: 0; border-radius: 8px; }
 .zoom-controls input[type="range"] { writing-mode: vertical-lr; direction: rtl; appearance: slider-vertical; height: 80px; margin: 0.3rem 0; }
 
 .canvas-area { flex-grow: 1; background: white; border-radius: 12px; border: 2px dashed var(--secondary-color); position: relative; overflow: hidden; cursor: grab; }
 .canvas-area:active { cursor: grabbing; }
-
 #canvas-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 0 0; }
-#wire-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-#gate-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+#wire-layer, #gate-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+#wire-layer { z-index: 1; } #gate-layer { z-index: 2; }
 
-/* 수정 5: 게이트 마우스 오버 시 테두리 파란색 */
-.canvas-gate { position: absolute; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none; pointer-events: auto; transition: transform 0.1s ease; }
-.canvas-gate:hover { transform: scale(1.08); }
+.canvas-gate { position: absolute; display: flex; align-items: center; justify-content: center; cursor: grab; pointer-events: auto; transition: transform 0.1s ease; user-select: none; }
+.canvas-gate:hover { transform: scale(1.05); }
 .canvas-gate:hover .gate-svg path { stroke: var(--hover-blue); stroke-width: 3px; }
 .canvas-gate:hover .gate-text { color: var(--hover-blue); }
 
-.gate-text { font-style: italic; font-size: 1.8rem; font-weight: bold; background: transparent; padding: 0.5rem; transition: color 0.2s; }
+.gate-text { font-style: italic; font-size: 1.8rem; font-weight: bold; }
 .gate-svg { width: 60px; height: 40px; }
-.gate-svg path { transition: stroke 0.2s, stroke-width 0.2s; }
+.gate-svg path, .gate-svg circle { transition: stroke 0.2s, stroke-width 0.2s; }
 
-.val-badge {
-    font-size: 0.9rem;
-    background: var(--secondary-color);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-left: 4px;
-    user-select: none;
-    transition: background 0.2s;
-}
-/* 수정 6: 잠긴 경우 배경 수정 */
+.val-badge { font-size: 0.9rem; background: var(--secondary-color); color: white; padding: 2px 8px; border-radius: 10px; cursor: pointer; margin-left: 6px; transition: background 0.2s; }
 .val-badge.locked { cursor: not-allowed; background: #aaa; }
 .val-badge:not(.locked):hover { background: var(--hover-blue); }
 
-/* 수정 5, 8: 포트 마우스 오버 파란색 및 호버 영역 */
+/* Ports & Wires */
 .port { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: black; cursor: crosshair; pointer-events: auto; transition: transform 0.2s, background 0.2s; }
-.port:hover { transform: scale(1.4); background: var(--hover-blue); }
-.port-in { left: -5px; }
-.port-out { right: -5px; }
+.port:hover { transform: scale(1.5); background: var(--hover-blue); }
+.port-in { left: -5px; } .port-out { right: -5px; }
 
 .wire-line { cursor: pointer; pointer-events: stroke; transition: stroke 0.2s, stroke-width 0.2s; }
 .wire-line:hover { stroke: var(--hover-blue) !important; stroke-width: 4px !important; }
 
-.trash-can {
-    position: absolute;
-    right: 1.5rem;
-    bottom: 1.5rem;
-    width: 56px;
-    height: 56px;
-    border: 2px dashed #888888;
-    border-radius: 12px;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888888;
-    z-index: 10;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
+/* Trash & UI Elements */
+.trash-can { position: absolute; right: 1.5rem; bottom: 1.5rem; width: 56px; height: 56px; border: 2px dashed #888; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #888; z-index: 10; cursor: pointer; transition: all 0.2s; }
 .trash-can svg { width: 28px; height: 28px; fill: currentColor; }
-.trash-can.active {
-    border-color: var(--hover-blue);
-    color: var(--hover-blue);
-    background-color: rgba(74, 144, 226, 0.08);
-    transform: scale(1.15);
-}
+.trash-can.active { border-color: var(--danger); color: var(--danger); background-color: rgba(230,57,70,0.1); transform: scale(1.1); }
 
-.boolean-equation {
-    margin-top: 1rem;
-    background: var(--primary-color);
-    color: white;
-    padding: 1.2rem 2rem;
-    border-radius: 12px;
-    font-size: 1.4rem;
-    text-align: right;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
+.boolean-equation { margin-top: 1rem; background: var(--primary-color); color: white; padding: 1.2rem 2rem; border-radius: 12px; font-size: 1.4rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-#table-view-container { position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 15; padding: 2rem; overflow: auto; font-size: 1.2rem; }
-.hidden { display: none !important; }
+#table-view-container { position: absolute; top:0; left:0; width:100%; height:100%; background: white; z-index: 15; padding: 2rem; overflow: auto; }
 table { width: 100%; border-collapse: collapse; text-align: center; }
 th, td { border: 1px solid var(--secondary-color); padding: 1rem; }
 th { background: var(--primary-color); color: white; }
+.hidden { display: none !important; }
 
-/* 수정 12: X 버튼과 겹치도록 설정 */
-.side-menu { position: fixed; top: 0; right: -350px; width: 350px; height: 100%; background: var(--primary-color); color: white; transition: right 0.3s ease; z-index: 300; padding: 3rem 2.5rem; }
+/* Side Menu */
+.side-menu { position: fixed; top: 0; right: -350px; width: 350px; height: 100%; background: var(--primary-color); padding: 3rem 2.5rem; z-index: 300; transition: right 0.3s ease; }
 .side-menu.open { right: 0; }
 .menu-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; margin-top: 5rem; }
-.side-menu .nav-btn { width: 100%; text-align: left; background: transparent; border: 1px solid white; font-size: 1.3rem; padding: 1.2rem; }
-.side-menu .nav-btn:hover { background: white; color: var(--primary-color) !important; }
+.side-menu .nav-btn { width: 100%; text-align: left; background: transparent; border: 1px solid white; padding: 1.2rem; }
+.side-menu .nav-btn:hover { background: white !important; color: var(--primary-color) !important; }
+.close-btn { position: absolute; top: 1rem; right: 1.2rem; background: transparent; color: white; font-size: 2.5rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; padding: 0; }
 
-/* 수정 12: X 버튼 위치 정렬 */
-.close-btn { 
-    position: absolute; 
-    top: 1rem; 
-    right: 1.2rem; 
-    background: transparent; 
-    color: white; 
-    font-size: 2.5rem; 
-    padding: 0; 
-    width: 48px; 
-    height: 48px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 수정 10: 게이트 사전 전용 오버레이 및 사각형 팝업 */
-#page-2 { position: relative; }
-.dict-dim-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6); display: none; z-index: 50;
-}
+/* Dictionary & Challenges */
+.dict-dim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 50; }
 .dict-dim-overlay.active { display: block; }
-
 .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; position: relative; z-index: 60; }
-.gate-card { 
-    background: white; padding: 2.5rem 2rem; border-radius: 12px; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; 
-    cursor: pointer; font-size: 1.3rem; position: relative; z-index: 61; 
-    transition: transform 0.2s;
-}
-.gate-card.open { transform: scale(1.03); border: 2px solid var(--hover-blue); }
-
-/* 수정 10: 클릭 시 게이트 버튼 아래로 새로 생성되는 설명 사각형 */
-.desc-box { 
-    display: none; margin-top: 1.5rem; padding: 1.2rem; 
-    background: #f0f7ff; border-radius: 8px; font-size: 1rem; 
-    text-align: left; border: 1px solid var(--hover-blue); color: #333; 
-}
+.gate-card { background: white; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; cursor: pointer; position: relative; z-index: 61; transition: transform 0.2s; }
+.gate-card.open { transform: scale(1.05); border: 2px solid var(--hover-blue); }
+.desc-box { display: none; margin-top: 1.5rem; padding: 1.2rem; background: #f0f7ff; border-radius: 8px; text-align: left; border: 1px solid var(--hover-blue); font-size: 1.1rem; }
 .gate-card.open .desc-box { display: block; }
 
-/* 수정 15: 미션 챌린지 버튼 상태 색상 (미진행: 흰색, 성공: 연한 초록, 실패: 연한 빨강) */
-.level-card { 
-    padding: 2.5rem 2rem; border-radius: 12px; text-align: center; 
-    cursor: pointer; font-size: 1.3rem; font-weight: bold; border: 2px solid #ddd; transition: background-color 0.3s; 
-}
-.level-card.unattempted { background-color: #ffffff; color: #333; }
+.level-card { padding: 2.5rem 2rem; border-radius: 12px; text-align: center; cursor: pointer; font-size: 1.3rem; font-weight: bold; border: 2px solid #ddd; transition: background 0.3s; height: auto;}
+.level-card.unattempted { background-color: white; color: #333; }
 .level-card.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
 .level-card.failure { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
-/* 수정 9, 13: 화면 가운데 안내 문구 팝업 및 어두운 배경 */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center;
-    align-items: center; z-index: 500;
-}
-.modal-box {
-    background: white; padding: 3rem 4rem; border-radius: 16px;
-    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 500; }
+.modal-box { background: white; padding: 3rem 4rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
 .modal-box p { font-size: 1.4rem; font-weight: bold; margin-bottom: 2rem; }
 .modal-btn-group { display: flex; gap: 1.5rem; justify-content: center; }
 
-/* 수정 9: 취소(흰색 배경), 삭제(빨간색 배경/흰 글씨) */
-.btn-cancel { background: white; color: #333; border: 1px solid #ccc; padding: 0.8rem 2rem; font-size: 1.1rem; }
+.btn-cancel { background: white; color: #333; border: 1px solid #ccc; padding: 0.8rem 2rem; height: auto;}
 .btn-cancel:hover { background: #eee !important; color: #333 !important; }
-.btn-delete { background: #e63946; color: white; padding: 0.8rem 2rem; font-size: 1.1rem; }
+.btn-delete { background: var(--danger); color: white; padding: 0.8rem 2rem; height: auto; }
 .btn-delete:hover { background: #c52a36 !important; color: white !important; }
 
 .success-text { color: #155724; font-size: 2.5rem; }
