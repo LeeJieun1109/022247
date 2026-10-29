@@ -1,27 +1,92 @@
-// SimulatorEngine.js: 게이트 논리 연산 및 회로 상태 관리 담당
-class SimulatorEngine {
-    constructor() {
-        // 수정 11: 8가지 게이트 데이터 정의
-        this.gateData = [
-            { name: 'AND', formula: 'F = A·B', exp: '모든 입력이 1일 때만 1을 출력합니다.' },
-            { name: 'OR', formula: 'F = A+B', exp: '입력 중 하나라도 1이면 1을 출력합니다.' },
-            { name: 'NOT', formula: 'F = A\'', exp: '입력을 반전하여 출력합니다.' }, // 수정 10: 'NOT:' 접두사 삭제
-            { name: 'NAND', formula: 'F = (A·B)\'', exp: 'AND 게이트의 출력을 반전합니다.' },
-            { name: 'NOR', formula: 'F = (A+B)\'', exp: 'OR 게이트의 출력을 반전합니다.' },
-            { name: 'XOR', formula: 'F = A⊕B', exp: '두 입력이 서로 다를 때만 1을 출력합니다.' },
-            { name: 'XNOR', formula: 'F = (A⊕B)\'', exp: '두 입력이 서로 같을 때만 1을 출력합니다.' },
-            { name: 'Buffer', formula: 'F = A', exp: '입력을 그대로 출력합니다 (신호 지연/증폭용).' }
-        ];
+class LogicNode {
+    constructor(id, type) {
+        this.id = id;
+        this.type = type; 
+        this.inputs = [];
+        this.value = 0;
     }
 
-    getGateDictionary() {
-        return this.gateData;
+    evaluate(visited = new Set()) {
+        if (visited.has(this.id)) return 0;
+        visited.add(this.id);
+
+        /* 수정 4: 'VARIABLE' (통합 변수) 추가 */
+        if (this.type === 'INPUT' || this.type === 'VARIABLE') return this.value;
+        
+        const vals = this.inputs.filter(Boolean).map(n => n.evaluate(new Set(visited)));
+        if (vals.length === 0) return 0;
+
+        /* 수정 7: 8개 게이트 연산 처리 로직 추가 */
+        switch (this.type) {
+            case 'AND':    return vals.reduce((a, b) => a & b, 1);
+            case 'OR':     return vals.reduce((a, b) => a | b, 0);
+            case 'XOR':    return vals.reduce((a, b) => a ^ b, 0);
+            case 'NOT':    return vals[0] === 1 ? 0 : 1;
+            case 'NAND':   return (vals.reduce((a, b) => a & b, 1)) === 1 ? 0 : 1;
+            case 'NOR':    return (vals.reduce((a, b) => a | b, 0)) === 1 ? 0 : 1;
+            case 'XNOR':   return (vals.reduce((a, b) => a ^ b, 0)) === 1 ? 0 : 1;
+            case 'Buffer': return vals[0] || 0;
+            case 'OUTPUT': return vals[0] || 0;
+            default: return 0;
+        }
     }
 
-    // 수정 13: 미션 채점 로직 (현재는 UI 노드 개수 기반 간단한 예시 구현)
-    evaluateCircuit(nodes) {
-        // 실제 구현에서는 노드들의 연결 그래프(Graph)를 탐색하여 진리표를 계산해야 합니다.
-        // 현재는 시연을 위해 노드가 2개 이상 배치되었는지 여부로 채점합니다.
-        return nodes.length >= 2;
+    getExpression(visited = new Set()) {
+        if (visited.has(this.id)) return '...';
+        visited.add(this.id);
+
+        const formatId = (idStr) => {
+            const parts = idStr.split('_');
+            return `<i>${parts[0]}<sub>${parts[1]}</sub></i>`;
+        };
+
+        if (this.type === 'INPUT' || this.type === 'VARIABLE') return formatId(this.id);
+        const validInputs = this.inputs.filter(Boolean);
+        if (validInputs.length === 0) return '0';
+
+        const exprs = validInputs.map(n => n.getExpression(new Set(visited)));
+        switch (this.type) {
+            case 'AND':    return `(${exprs.join(' · ')})`;
+            case 'OR':     return `(${exprs.join(' + ')})`;
+            case 'XOR':    return `(${exprs.join(' ⊕ ')})`;
+            case 'NOT':    return `(${exprs[0]}')`;
+            case 'NAND':   return `(${exprs.join(' · ')})'`;
+            case 'NOR':    return `(${exprs.join(' + ')})'`;
+            case 'XNOR':   return `(${exprs.join(' ⊕ ')})'`;
+            case 'Buffer': return exprs[0];
+            case 'OUTPUT': return exprs[0];
+            default: return '';
+        }
     }
 }
+
+function generateTruthTable(inputNodes, outputNodes) {
+    if (inputNodes.length === 0) return [];
+    const numRows = Math.pow(2, inputNodes.length);
+    const table = [];
+    for (let i = 0; i < numRows; i++) {
+        const row = {};
+        inputNodes.forEach((node, idx) => {
+            const bit = (i >> (inputNodes.length - 1 - idx)) & 1;
+            node.value = bit;
+            row[node.id] = bit;
+        });
+        outputNodes.forEach(node => {
+            row[node.id] = node.evaluate();
+        });
+        table.push(row);
+    }
+    return table;
+}
+
+/* 수정 11: 게이트 사전에 활용할 8개 게이트 설명 데이터 정의 */
+const GATE_DICTIONARY = [
+    { type: 'AND', exp: '모든 입력이 참(1)일 때만 결과가 참(1)이 됩니다.' },
+    { type: 'OR', exp: '입력 중 하나라도 참(1)이면 결과가 참(1)이 됩니다.' },
+    { type: 'NOT', exp: '입력을 반전합니다. 입력이 1이면 0, 0이면 1이 됩니다.' }, // 수정 10: 'NOT:' 삭제
+    { type: 'NAND', exp: 'AND 연산의 결과를 반전합니다.' },
+    { type: 'NOR', exp: 'OR 연산의 결과를 반전합니다.' },
+    { type: 'XOR', exp: '입력값이 서로 다를 때만 참(1)을 출력합니다.' },
+    { type: 'XNOR', exp: '입력값이 서로 같을 때만 참(1)을 출력합니다.' },
+    { type: 'Buffer', exp: '입력값을 변형 없이 그대로 출력합니다.' }
+];
