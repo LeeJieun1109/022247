@@ -3,35 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 수정 1: 제목 '디지털 논리회로 마스터' -> '논리 회로 시뮬레이터'로 변경 -->
     <title>논리 회로 시뮬레이터</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="dim-overlay" class="dim-overlay"></div>
 
-    <!-- 우측 슬라이드 메뉴 -->
     <nav id="side-menu" class="side-menu">
-        <!-- 수정 12: X 버튼과의 위치 겹침 조정 -->
         <button id="close-menu-btn" class="close-btn">&times;</button>
         <ul class="menu-list">
             <li><button class="nav-btn" data-target="main-page">홈으로</button></li>
-            <!-- 수정 3: 메뉴 명칭 변경 -->
             <li><button class="nav-btn" data-target="page-1">회로도 그리기</button></li>
             <li><button class="nav-btn" data-target="page-2">게이트 사전</button></li>
             <li><button class="nav-btn" data-target="page-3">미션 챌린지</button></li>
         </ul>
     </nav>
 
-    <!-- 메인 화면 -->
     <section id="main-page" class="page active">
         <div class="content-box">
-            <!-- 수정 1: 제목 변경 -->
             <h1>논리 회로 시뮬레이터</h1>
-            <!-- 수정 2: '10925 이지은B' 글씨 크기 줄임 (subtitle 소형화 CSS 적용) -->
             <p class="subtitle">10925 이지은B</p>
             <div class="menu-buttons">
-                <!-- 수정 3: 버튼 명칭 변경 -->
                 <button class="nav-btn" data-target="page-1">회로도 그리기</button>
                 <button class="nav-btn" data-target="page-2">게이트 사전</button>
                 <button class="nav-btn" data-target="page-3">미션 챌린지</button>
@@ -39,30 +31,22 @@
         </div>
     </section>
 
-    <!-- 세부 페이지 1: 시뮬레이터 -->
     <section id="page-1" class="page">
         <header>
-            <!-- 수정 14: 레벨 챌린지에서 들어올 때 나오는 '<-' 모양 화살표 버튼 -->
             <button id="back-to-challenge-btn" class="back-arrow-btn hidden">&lt;-</button>
-            <!-- 수정 13: 제목 교체 영역 -->
             <h2 id="circuit-header-title">회로도 그리기</h2>
-            
             <div class="header-controls">
                 <button id="toggle-view-btn">진리표</button>
-                <!-- 수정 13: 진리표 대신 '채점하기' 버튼으로 교체할 수 있도록 준비 -->
                 <button id="submit-btn" class="submit-btn hidden">채점하기</button>
-                <!-- 수정 12: 정사각형 메뉴 버튼 -->
                 <button class="open-menu-btn hamburger-btn">&#9776;</button>
             </div>
         </header>
 
         <div class="workspace">
             <aside class="gate-toolbar">
-                <!-- 수정 4: INPUT/OUTPUT 삭제 -> '변수'로 합침 -->
                 <div class="gate-item" draggable="true" data-type="VARIABLE">
-                    <span>변수</span><button class="info-btn" data-info="입출력 가능 변수">+</button>
+                    <span>변수</span><button class="info-btn" data-info="입출력 가능 변수 (좌측 선 연결시 출력, 미연결시 입력)">+</button>
                 </div>
-                <!-- 수정 7: 8종 게이트 추가 (AND, OR, NOT, NAND, NOR, XOR, XNOR, Buffer) -->
                 <div class="gate-item" draggable="true" data-type="AND">
                     <span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button>
                 </div>
@@ -106,10 +90,8 @@
                     <div id="gate-layer"></div>
                 </div>
                 
-                <div id="trash-can" class="trash-can" title="삭제 아이콘">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
+                <div id="trash-can" class="trash-can" title="전체 삭제">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                 </div>
 
                 <div id="table-view-container" class="hidden">
@@ -123,19 +105,15 @@
         </div>
     </section>
 
-    <!-- 세부 페이지 2: 게이트 사전 -->
     <section id="page-2" class="page">
         <header>
             <h2>게이트 사전</h2>
             <button class="open-menu-btn hamburger-btn">&#9776;</button>
         </header>
-        <!-- 수정 10: 사전 전용 어두운 오버레이 -->
         <div id="dict-dim-overlay" class="dict-dim-overlay"></div>
-        <!-- 수정 11: 8종 게이트 사전 카드가 스크립트에서 자동 생성됨 -->
         <div id="dict-card-grid" class="card-grid"></div>
     </section>
 
-    <!-- 세부 페이지 3: 미션 챌린지 -->
     <section id="page-3" class="page">
         <header>
             <h2>미션 챌린지</h2>
@@ -144,7 +122,6 @@
         <div id="level-grid" class="card-grid"></div>
     </section>
 
-    <!-- 수정 9: 회로도 전체 삭제 안내 모달 -->
     <div id="delete-modal-overlay" class="modal-overlay hidden">
         <div class="modal-box">
             <p>회로도 전체를 삭제합니다</p>
@@ -155,10 +132,9 @@
         </div>
     </div>
 
-    <!-- 수정 13: 성공/실패 결과 모달 -->
     <div id="result-modal-overlay" class="modal-overlay hidden">
         <div class="modal-box">
-            <h2 id="result-modal-text">성공</h2>
+            <h2 id="result-modal-text">결과</h2>
             <button id="close-result-modal-btn" class="btn-cancel" style="margin-top:1.5rem;">닫기</button>
         </div>
     </div>
