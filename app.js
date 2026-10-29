@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 상태 관리 (Level 1~12)
     window.levelStatuses = {};
     for (let i = 1; i <= 12; i++) window.levelStatuses[i] = 'unattempted';
     window.currentActiveLevel = null;
 
-    // 2. SPA 라우팅
     const pages = document.querySelectorAll('.page');
     function showPageById(targetId) {
         pages.forEach(p => p.classList.remove('active'));
@@ -16,70 +14,74 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => showPageById(e.currentTarget.dataset.target));
     });
 
-    // 3. 사이드 메뉴 토글
     const sideMenu = document.getElementById('side-menu');
     document.querySelectorAll('.open-menu-btn').forEach(btn => btn.addEventListener('click', () => sideMenu.classList.add('open')));
     document.getElementById('close-menu-btn').addEventListener('click', () => sideMenu.classList.remove('open'));
 
-    // 4. 게이트 사전 렌더링
+    // 게이트 사전 렌더링 (카드 클릭 시 팝업 생성 방식 적용)
     const dictGrid = document.getElementById('dict-card-grid');
-    const dictOverlay = document.getElementById('dict-dim-overlay');
+    const gatePopup = document.getElementById('gate-popup');
+    const gatePopupTitle = document.getElementById('gate-popup-title');
+    const gatePopupDesc = document.getElementById('gate-popup-desc');
+    const gatePopupClose = document.getElementById('gate-popup-close');
 
     if (dictGrid && typeof GATE_DICTIONARY !== 'undefined') {
         GATE_DICTIONARY.forEach(gate => {
             const card = document.createElement('div');
             card.className = 'gate-card';
-            card.innerHTML = `<h3>${gate.type}</h3><div class="desc-box">${gate.exp}</div>`;
+            card.innerHTML = `<h3>${gate.type}</h3>`;
             
-            card.addEventListener('click', () => {
-                if (card.classList.contains('open')) {
-                    card.classList.remove('open');
-                    dictOverlay.classList.remove('active');
-                } else {
-                    document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('open'));
-                    card.classList.add('open');
-                    dictOverlay.classList.add('active');
-                }
+            card.addEventListener('click', (e) => {
+                // 클릭한 카드만 강조
+                document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                // 팝업 내용 업데이트 및 표시 (클릭한 요소 근처 위치 설정)
+                gatePopupTitle.innerText = gate.type;
+                gatePopupDesc.innerText = gate.exp;
+                
+                const rect = card.getBoundingClientRect();
+                gatePopup.style.top = `${rect.bottom + window.scrollY + 15}px`;
+                gatePopup.style.left = `${rect.left + window.scrollX}px`;
+                gatePopup.classList.remove('hidden');
             });
             dictGrid.appendChild(card);
         });
 
-        dictOverlay.addEventListener('click', () => {
-            document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('open'));
-            dictOverlay.classList.remove('active');
+        gatePopupClose.addEventListener('click', () => {
+            gatePopup.classList.add('hidden');
+            document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('selected'));
         });
     }
 
-    // 5. 미션 챌린지 렌더링
+    // 미션 챌린지 렌더링
     const levelGrid = document.getElementById('level-grid');
-    if (levelGrid) {
-        for (let i = 1; i <= 12; i++) {
+    if (levelGrid && typeof MISSIONS !== 'undefined') {
+        MISSIONS.forEach(mission => {
             const card = document.createElement('button');
-            card.className = `level-card ${window.levelStatuses[i]}`;
-            card.dataset.level = i;
-            card.innerHTML = `<h3>Level ${i}</h3>`;
+            card.className = `level-card ${window.levelStatuses[mission.level]}`;
+            card.dataset.level = mission.level;
+            
+            card.innerHTML = `<h3 style="margin-bottom:0.8rem;">${mission.title}</h3><p style="font-size:0.95rem; font-weight:normal; line-height:1.4;">${mission.desc}</p>`;
             
             card.addEventListener('click', () => {
-                window.currentActiveLevel = i;
+                window.currentActiveLevel = mission.level;
                 showPageById('page-1');
                 
-                // 챌린지 모드 UI 세팅
-                document.getElementById('circuit-header-title').innerText = `Level ${i} : 회로 설계하기`;
+                document.getElementById('circuit-header-title').innerText = `${mission.title} : 회로 설계하기`;
                 document.getElementById('toggle-view-btn').classList.add('hidden');
                 document.getElementById('submit-btn').classList.remove('hidden');
                 document.getElementById('back-to-challenge-btn').classList.remove('hidden');
                 document.querySelector('#page-1 .open-menu-btn').classList.add('hidden');
             });
             levelGrid.appendChild(card);
-        }
+        });
     }
 
-    // 6. 챌린지 모드 뒤로가기
     document.getElementById('back-to-challenge-btn').addEventListener('click', () => {
         window.currentActiveLevel = null;
         showPageById('page-3');
         
-        // 일반 모드 UI 복구
         document.getElementById('circuit-header-title').innerText = '회로도 그리기';
         document.getElementById('toggle-view-btn').classList.remove('hidden');
         document.getElementById('submit-btn').classList.add('hidden');
@@ -87,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#page-1 .open-menu-btn').classList.remove('hidden');
     });
 
-    // 7. 색상 업데이트 헬퍼
     window.updateLevelButtonColors = function() {
         document.querySelectorAll('.level-card').forEach(card => {
             card.className = `level-card ${window.levelStatuses[card.dataset.level]}`;
