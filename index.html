@@ -3,102 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 수정 1: 제목 변경 -->
+    <!-- 수정 1: 제목 '디지털 논리회로 마스터' -> '논리 회로 시뮬레이터'로 변경 -->
     <title>논리 회로 시뮬레이터</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <!-- 수정 1, 2: 제목 변경 및 '10925 이지은B' 크기 축소 (CSS author 클래스) -->
-        <h1>논리 회로 시뮬레이터 <span class="author">10925 이지은B</span></h1>
-        
-        <!-- 수정 12: 메뉴 버튼을 정사각형으로 변경 및 X버튼과 위치 겹침 -->
-        <button id="menu-btn" class="menu-btn">☰</button>
-    </header>
+    <div id="dim-overlay" class="dim-overlay"></div>
 
-    <!-- 사이드 메뉴 -->
-    <nav id="side-menu" class="hidden">
-        <!-- 수정 12: 열렸을 때 ☰ 버튼과 겹치는 위치에 X 버튼 -->
-        <button id="close-menu-btn" class="close-btn">X</button>
-        <!-- 수정 3: 메뉴 이름 변경 ('회로도 그리기', '게이트 사전', '미션 챌린지') -->
-        <button class="nav-btn" data-page="circuit">회로도 그리기</button>
-        <button class="nav-btn" data-page="dictionary">게이트 사전</button>
-        <button class="nav-btn" data-page="challenge">미션 챌린지</button>
+    <!-- 우측 슬라이드 메뉴 -->
+    <nav id="side-menu" class="side-menu">
+        <!-- 수정 12: X 버튼과의 위치 겹침 조정 -->
+        <button id="close-menu-btn" class="close-btn">&times;</button>
+        <ul class="menu-list">
+            <li><button class="nav-btn" data-target="main-page">홈으로</button></li>
+            <!-- 수정 3: 메뉴 명칭 변경 -->
+            <li><button class="nav-btn" data-target="page-1">회로도 그리기</button></li>
+            <li><button class="nav-btn" data-target="page-2">게이트 사전</button></li>
+            <li><button class="nav-btn" data-target="page-3">미션 챌린지</button></li>
+        </ul>
     </nav>
 
-    <!-- 1. 회로도 그리기 페이지 -->
-    <main id="page-circuit" class="page active">
-        <!-- 수정 13, 14: 레벨 챌린지에서 진입 시 띄울 상단 바 -->
-        <div id="challenge-header" class="hidden">
-            <!-- 수정 14: 이전 페이지(레벨 챌린지)로 돌아가는 화살표 -->
-            <button id="back-to-challenge-btn">⬅</button>
-            <!-- 수정 13: 레벨 제목 및 '진리표' 대신 '채점하기' 버튼 -->
-            <h2 id="challenge-title">Level 1 : 기본 회로 설계하기</h2>
-            <button id="submit-btn" class="submit-btn">채점하기</button>
+    <!-- 메인 화면 -->
+    <section id="main-page" class="page active">
+        <div class="content-box">
+            <!-- 수정 1: 제목 변경 -->
+            <h1>논리 회로 시뮬레이터</h1>
+            <!-- 수정 2: '10925 이지은B' 글씨 크기 줄임 (subtitle 소형화 CSS 적용) -->
+            <p class="subtitle">10925 이지은B</p>
+            <div class="menu-buttons">
+                <!-- 수정 3: 버튼 명칭 변경 -->
+                <button class="nav-btn" data-target="page-1">회로도 그리기</button>
+                <button class="nav-btn" data-target="page-2">게이트 사전</button>
+                <button class="nav-btn" data-target="page-3">미션 챌린지</button>
+            </div>
         </div>
+    </section>
 
-        <div class="toolbar" id="toolbar">
-            <!-- 수정 4: INPUT/OUTPUT을 '변수'로 통합 -->
-            <button class="tool-btn" data-type="variable">변수</button>
-            <!-- 수정 7: 8가지 게이트 추가 -->
-            <button class="tool-btn" data-type="and">AND</button>
-            <button class="tool-btn" data-type="or">OR</button>
-            <button class="tool-btn" data-type="not">NOT</button>
-            <button class="tool-btn" data-type="nand">NAND</button>
-            <button class="tool-btn" data-type="nor">NOR</button>
-            <button class="tool-btn" data-type="xor">XOR</button>
-            <button class="tool-btn" data-type="xnor">XNOR</button>
-            <button class="tool-btn" data-type="buffer">Buffer</button>
+    <!-- 세부 페이지 1: 시뮬레이터 -->
+    <section id="page-1" class="page">
+        <header>
+            <!-- 수정 14: 레벨 챌린지에서 들어올 때 나오는 '<-' 모양 화살표 버튼 -->
+            <button id="back-to-challenge-btn" class="back-arrow-btn hidden">&lt;-</button>
+            <!-- 수정 13: 제목 교체 영역 -->
+            <h2 id="circuit-header-title">회로도 그리기</h2>
             
-            <!-- 수정 9: 휴지통 아이콘 -->
-            <button id="trash-btn" class="tool-btn trash-btn">🗑️</button>
+            <div class="header-controls">
+                <button id="toggle-view-btn">진리표</button>
+                <!-- 수정 13: 진리표 대신 '채점하기' 버튼으로 교체할 수 있도록 준비 -->
+                <button id="submit-btn" class="submit-btn hidden">채점하기</button>
+                <!-- 수정 12: 정사각형 메뉴 버튼 -->
+                <button class="open-menu-btn hamburger-btn">&#9776;</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <aside class="gate-toolbar">
+                <!-- 수정 4: INPUT/OUTPUT 삭제 -> '변수'로 합침 -->
+                <div class="gate-item" draggable="true" data-type="VARIABLE">
+                    <span>변수</span><button class="info-btn" data-info="입출력 가능 변수">+</button>
+                </div>
+                <!-- 수정 7: 8종 게이트 추가 (AND, OR, NOT, NAND, NOR, XOR, XNOR, Buffer) -->
+                <div class="gate-item" draggable="true" data-type="AND">
+                    <span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="OR">
+                    <span>OR</span><button class="info-btn" data-info="입력 중 하나라도 1이면 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="NOT">
+                    <span>NOT</span><button class="info-btn" data-info="입력 반전">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="NAND">
+                    <span>NAND</span><button class="info-btn" data-info="AND 반전">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="NOR">
+                    <span>NOR</span><button class="info-btn" data-info="OR 반전">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="XOR">
+                    <span>XOR</span><button class="info-btn" data-info="입력이 서로 다를 때만 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="XNOR">
+                    <span>XNOR</span><button class="info-btn" data-info="입력이 서로 같을 때만 1 출력">+</button>
+                </div>
+                <div class="gate-item" draggable="true" data-type="Buffer">
+                    <span>Buffer</span><button class="info-btn" data-info="신호 유지/전달">+</button>
+                </div>
+                
+                <div id="tooltip-box" class="tooltip-box hidden">
+                    <button id="close-tooltip-btn" class="close-btn">&times;</button>
+                    <p id="tooltip-desc"></p>
+                </div>
+            </aside>
+
+            <div class="zoom-controls">
+                <button id="zoom-in">+</button>
+                <input type="range" id="zoom-slider" min="0.5" max="2" step="0.1" value="1">
+                <button id="zoom-out">-</button>
+            </div>
+
+            <main class="canvas-area" id="circuit-canvas">
+                <div id="canvas-inner">
+                    <svg id="wire-layer"></svg>
+                    <div id="gate-layer"></div>
+                </div>
+                
+                <div id="trash-can" class="trash-can" title="삭제 아이콘">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </div>
+
+                <div id="table-view-container" class="hidden">
+                    <table id="truth-table"></table>
+                </div>
+            </main>
         </div>
         
-        <div class="canvas-container" id="canvas-container">
-            <svg id="circuit-svg"></svg>
+        <div class="boolean-equation">
+            <span id="equation-display">대기 중...</span>
         </div>
-    </main>
+    </section>
 
-    <!-- 2. 게이트 사전 페이지 -->
-    <main id="page-dictionary" class="page hidden">
-        <h2>게이트 사전</h2>
-        <div class="gate-dict-grid" id="gate-dict-grid"></div>
-        <!-- 수정 10: 사전 클릭 시 배경 어두워지는 오버레이 -->
-        <div id="dict-overlay" class="hidden"></div>
-    </main>
+    <!-- 세부 페이지 2: 게이트 사전 -->
+    <section id="page-2" class="page">
+        <header>
+            <h2>게이트 사전</h2>
+            <button class="open-menu-btn hamburger-btn">&#9776;</button>
+        </header>
+        <!-- 수정 10: 사전 전용 어두운 오버레이 -->
+        <div id="dict-dim-overlay" class="dict-dim-overlay"></div>
+        <!-- 수정 11: 8종 게이트 사전 카드가 스크립트에서 자동 생성됨 -->
+        <div id="dict-card-grid" class="card-grid"></div>
+    </section>
 
-    <!-- 3. 미션 챌린지 페이지 -->
-    <main id="page-challenge" class="page hidden">
-        <h2>미션 챌린지</h2>
-        <div class="level-grid">
-            <!-- 수정 15: 성공/실패 상태 표시를 위한 클래스 -->
-            <button class="level-btn unattempted" data-level="1">Level 1</button>
-            <button class="level-btn unattempted" data-level="2">Level 2</button>
-            <button class="level-btn unattempted" data-level="3">Level 3</button>
-        </div>
-    </main>
+    <!-- 세부 페이지 3: 미션 챌린지 -->
+    <section id="page-3" class="page">
+        <header>
+            <h2>미션 챌린지</h2>
+            <button class="open-menu-btn hamburger-btn">&#9776;</button>
+        </header>
+        <div id="level-grid" class="card-grid"></div>
+    </section>
 
-    <!-- 수정 9: 전체 삭제 확인 모달 -->
+    <!-- 수정 9: 회로도 전체 삭제 안내 모달 -->
     <div id="delete-modal-overlay" class="modal-overlay hidden">
-        <div class="modal">
+        <div class="modal-box">
             <p>회로도 전체를 삭제합니다</p>
-            <div class="modal-buttons">
-                <!-- 수정 9: 취소는 흰 배경, 삭제는 빨간 배경 -->
-                <button id="cancel-delete" class="cancel-btn">취소</button>
-                <button id="confirm-delete" class="delete-btn">삭제</button>
+            <div class="modal-btn-group">
+                <button id="cancel-delete-btn" class="btn-cancel">취소</button>
+                <button id="confirm-delete-btn" class="btn-delete">삭제</button>
             </div>
         </div>
     </div>
 
-    <!-- 수정 13: 채점 결과 모달 -->
+    <!-- 수정 13: 성공/실패 결과 모달 -->
     <div id="result-modal-overlay" class="modal-overlay hidden">
-        <div class="modal">
-            <h2 id="result-text">성공</h2>
-            <button id="close-result-btn" class="cancel-btn">닫기</button>
+        <div class="modal-box">
+            <h2 id="result-modal-text">성공</h2>
+            <button id="close-result-modal-btn" class="btn-cancel" style="margin-top:1.5rem;">닫기</button>
         </div>
     </div>
 
-    <!-- 스크립트 분리 로드 -->
     <script src="SimulatorEngine.js"></script>
     <script src="SimulatorUI.js"></script>
     <script src="app.js"></script>
