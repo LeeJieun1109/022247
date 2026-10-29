@@ -42,11 +42,17 @@ button:hover { background-color: var(--hover-blue) !important; color: white !imp
 .gate-item:hover { background: #e8f2ff; color: var(--hover-blue); }
 .info-btn { padding: 0 0.4rem; height: 28px; border-radius: 50%; font-size: 1rem; }
 
-/* Tooltips */
+/* Tooltips & Popups */
 .dim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 100; }
 .dim-overlay.active { display: block; }
+
 .tooltip-box { position: absolute; left: 105%; top: 0; width: 250px; background: white; border: 2px solid var(--primary-color); border-radius: 8px; padding: 1.5rem; z-index: 201; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-.tooltip-box .close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; color: black; font-size: 1.5rem; padding: 0; width: auto; height: auto;}
+.tooltip-box .close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; font-size: 1.5rem; padding: 0; width: auto; height: auto;}
+
+.gate-popup { position: absolute; background: white; border: 2px solid var(--hover-blue); border-radius: 12px; padding: 1.5rem 2rem; width: 300px; z-index: 200; box-shadow: 0 8px 20px rgba(0,0,0,0.15); animation: fadeIn 0.2s; }
+.gate-popup h3 { color: var(--primary-color); margin-bottom: 0.8rem; font-size: 1.3rem; }
+.gate-popup p { font-size: 1.05rem; line-height: 1.4; color: #444; }
+.gate-popup .close-btn { position: absolute; top: 0.5rem; right: 0.8rem; background: none; font-size: 1.5rem; padding: 0; width: auto; height: auto; }
 
 /* Canvas & Gates */
 .zoom-controls { position: absolute; right: 1.5rem; top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.9); padding: 0.8rem; border-radius: 12px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #ddd; }
@@ -102,15 +108,14 @@ th { background: var(--primary-color); color: white; }
 .close-btn { position: absolute; top: 1rem; right: 1.2rem; background: transparent; color: white; font-size: 2.5rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; padding: 0; }
 
 /* Dictionary & Challenges */
-.dict-dim-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 50; }
-.dict-dim-overlay.active { display: block; }
-.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; position: relative; z-index: 60; }
-.gate-card { background: white; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; cursor: pointer; position: relative; z-index: 61; transition: transform 0.2s; }
-.gate-card.open { transform: scale(1.05); border: 2px solid var(--hover-blue); }
-.desc-box { display: none; margin-top: 1.5rem; padding: 1.2rem; background: #f0f7ff; border-radius: 8px; text-align: left; border: 1px solid var(--hover-blue); font-size: 1.1rem; }
-.gate-card.open .desc-box { display: block; }
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; position: relative; }
+.mission-grid { grid-template-columns: repeat(3, 1fr); }
 
-.level-card { padding: 2.5rem 2rem; border-radius: 12px; text-align: center; cursor: pointer; font-size: 1.3rem; font-weight: bold; border: 2px solid #ddd; transition: background 0.3s; height: auto;}
+.gate-card { background: white; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+.gate-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+.gate-card.selected { border-color: var(--hover-blue); background-color: #f8fbff; }
+
+.level-card { padding: 2rem 1.5rem; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid #ddd; transition: background 0.3s; height: auto;}
 .level-card.unattempted { background-color: white; color: #333; }
 .level-card.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
 .level-card.failure { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
