@@ -5,13 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const wireLayer = document.getElementById('wire-layer');
     const trashCan = document.getElementById('trash-can');
     const eqSpan = document.getElementById('equation-display');
+    const eqContainer = document.querySelector('.boolean-equation');
     
     let nodes = [], wires = [];
     let varCount = 1, gateCount = 1;
     let draggedType = null, activeGate = null;
     let isWiring = false, wireStartPort = null, currentLine = null;
     
-    // Pan & Zoom state
     let currentZoom = 1;
     let isPanning = false, panX = 0, panY = 0, startMouseX = 0, startMouseY = 0;
 
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
     }
 
-    // Canvas Panning
     canvas.addEventListener('mousedown', (e) => {
         if (e.target.closest('.canvas-gate') || e.target.classList.contains('port') || e.target.closest('.trash-can')) return;
         isPanning = true;
@@ -34,13 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.addEventListener('mouseup', () => isPanning = false);
 
-    // Zoom Controls
     const zoomSlider = document.getElementById('zoom-slider');
     document.getElementById('zoom-in').addEventListener('click', () => { currentZoom = Math.min(2, currentZoom + 0.1); zoomSlider.value = currentZoom; applyTransform(); });
     document.getElementById('zoom-out').addEventListener('click', () => { currentZoom = Math.max(0.5, currentZoom - 0.1); zoomSlider.value = currentZoom; applyTransform(); });
     zoomSlider.addEventListener('input', (e) => { currentZoom = parseFloat(e.target.value); applyTransform(); });
 
-    // Drag & Drop Gates
     document.querySelectorAll('.gate-toolbar .gate-item').forEach(item => {
         item.addEventListener('dragstart', (e) => { draggedType = e.currentTarget.dataset.type; });
     });
@@ -55,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedType = null;
     });
 
-    // Tooltip Logic
+    // 툴팁(툴바 설명창)
     const dimOverlay = document.getElementById('dim-overlay');
     const tooltipBox = document.getElementById('tooltip-box');
     const tooltipDesc = document.getElementById('tooltip-desc');
@@ -107,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (n.type === 'VARIABLE') {
                 el.classList.add('gate-text');
                 const hasInputWire = wires.some(w => w.to === n.id);
-                // 입력 선이 있으면 값이 동적으로 변함, 없으면 수동 조작
+                // 입력 선이 있으면 값이 동적으로 변함 (OUTPUT), 없으면 수동 조작 (INPUT)
                 const displayVal = hasInputWire ? n.logicNode.evaluate() : n.logicNode.value;
                 
                 el.innerHTML = `<i>${n.id.split('_')[0]}<sub>${n.id.split('_')[1]}</sub></i> <span class="val-badge ${hasInputWire ? 'locked' : ''}">${displayVal}</span>`;
@@ -123,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.innerHTML = getGateSVG(n.type);
             }
 
-            // Ports
             const isSingleInput = ['NOT', 'Buffer', 'VARIABLE'].includes(n.type);
             const pIn1 = document.createElement('div'); 
             pIn1.className = 'port port-in'; pIn1.dataset.node = n.id; pIn1.dataset.portIndex = '0';
@@ -142,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
             pOut.style.top = '15px';
             el.appendChild(pOut);
 
-            // Gate Dragging
             el.addEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('port') || e.target.classList.contains('val-badge')) return;
                 activeGate = n;
@@ -178,7 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
     }
 
-    // Wiring Logic
     function getPortCenter(portEl) {
         const r = portEl.getBoundingClientRect();
         const c = canvasInner.getBoundingClientRect();
@@ -217,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const toId = target.dataset.node;
             const toIdx = parseInt(target.dataset.portIndex || '0', 10);
             
-            // 사이클 방지 및 자기 연결 방지
             if (fromId !== toId) {
                 wires = wires.filter(w => !(w.to === toId && w.toPortIndex === toIdx));
                 wires.push({ from: fromId, to: toId, toPortIndex: toIdx });
@@ -262,19 +255,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCanvas();
     }
 
+    // 결과창: 아무것도 없을 땐 숨김 처리 / OUTPUT 변수만 추출하여 표시
     function updateEquation() {
-        const vars = nodes.filter(n => n.type === 'VARIABLE');
-        if (vars.length > 0) {
-            eqSpan.innerHTML = vars.map(o => {
+        const outVars = nodes.filter(n => n.type === 'VARIABLE' && wires.some(w => w.to === n.id));
+        
+        if (outVars.length > 0) {
+            eqContainer.style.display = 'block';
+            eqSpan.innerHTML = outVars.map(o => {
                 const parts = o.id.split('_');
-                return `<i>${parts[0]}<sub>${parts[1]}</sub></i> = ${o.logicNode.getExpression()} (결과: ${o.logicNode.evaluate()})`;
+                return `<i>${parts[0]}<sub>${parts[1]}</sub>(Out)</i> = ${o.logicNode.getExpression()} (결과: <b>${o.logicNode.evaluate()}</b>)`;
             }).join(' &nbsp;|&nbsp; ');
         } else {
-            eqSpan.innerText = '변수를 배치하고 게이트와 연결하세요.';
+            eqContainer.style.display = 'none';
+            eqSpan.innerHTML = '';
         }
     }
 
-    // Trash Can Modal
     trashCan.addEventListener('click', () => document.getElementById('delete-modal-overlay').classList.remove('hidden'));
     document.getElementById('cancel-delete-btn').addEventListener('click', () => document.getElementById('delete-modal-overlay').classList.add('hidden'));
     document.getElementById('confirm-delete-btn').addEventListener('click', () => {
@@ -282,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('delete-modal-overlay').classList.add('hidden');
     });
 
-    // Truth Table Toggle
     const toggleBtn = document.getElementById('toggle-view-btn');
     const tableContainer = document.getElementById('table-view-container');
     const truthTable = document.getElementById('truth-table');
@@ -293,27 +288,35 @@ document.addEventListener('DOMContentLoaded', () => {
             isTableMode = !isTableMode;
             tableContainer.classList.toggle('hidden', !isTableMode);
             toggleBtn.innerText = isTableMode ? '회로도' : '진리표';
+            
             if (isTableMode) {
-                const vars = nodes.filter(n => n.type === 'VARIABLE').map(n => n.logicNode);
-                if (vars.length === 0) { truthTable.innerHTML = '<tr><td>변수가 필요합니다.</td></tr>'; return; }
-                const data = generateTruthTable(vars);
+                const { inputs, outputs, data } = generateTruthTable(nodes, wires);
                 
-                let html = '<tr>' + vars.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (In)</th>`).join('') + 
-                           vars.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (Out)</th>`).join('') + '</tr>';
+                if (inputs.length === 0) { 
+                    truthTable.innerHTML = '<tr><td>입력 변수가 필요합니다.</td></tr>'; 
+                    return; 
+                }
+                
+                // (In) / (Out) 헤더 분리
+                let html = '<tr>' + 
+                           inputs.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (In)</th>`).join('') + 
+                           outputs.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (Out)</th>`).join('') + 
+                           '</tr>';
+                
                 data.forEach(row => {
-                    html += '<tr>' + vars.map(i => `<td>${row[i.id]}</td>`).join('') + 
-                                     vars.map(i => `<td>${row[`${i.id}_out`]}</td>`).join('') + '</tr>';
+                    html += '<tr>' + 
+                            inputs.map(i => `<td>${row[i.id]}</td>`).join('') + 
+                            outputs.map(i => `<td>${row[`${i.id}_out`]}</td>`).join('') + 
+                            '</tr>';
                 });
                 truthTable.innerHTML = html;
             }
         });
     }
 
-    // Challenge Evaluation
     const submitBtn = document.getElementById('submit-btn');
     if (submitBtn) {
         submitBtn.addEventListener('click', () => {
-            // 채점 로직 (간단한 예시: 노드 2개 이상, 와이어 1개 이상이면 성공)
             const isSuccess = nodes.length >= 2 && wires.length >= 1; 
             const resultModal = document.getElementById('result-modal-overlay');
             const resultText = document.getElementById('result-modal-text');
