@@ -3,14 +3,22 @@ class LogicNode {
         this.id = id;
         this.type = type; 
         this.inputs = [];
-        this.value = 0; // VARIABLE 기본값
+        this.value = 0; // 기본값
     }
 
     evaluate(visited = new Set()) {
         if (visited.has(this.id)) return 0;
         visited.add(this.id);
 
-        if (this.type === 'VARIABLE') return this.value;
+        if (this.type === 'VARIABLE') {
+            const validInputs = this.inputs.filter(n => n !== undefined && n !== null);
+            if (validInputs.length > 0) {
+                // 선이 연결된 OUTPUT 변수인 경우 입력받은 값을 그대로 평가
+                return validInputs[0].evaluate(new Set(visited));
+            }
+            // 선이 연결되지 않은 INPUT 변수인 경우 사용자 지정값 반환
+            return this.value; 
+        }
         
         const validInputs = this.inputs.filter(n => n !== undefined && n !== null);
         const vals = validInputs.map(n => n.evaluate(new Set(visited)));
@@ -39,7 +47,13 @@ class LogicNode {
             return `<i>${parts[0]}<sub>${parts[1]}</sub></i>`;
         };
 
-        if (this.type === 'VARIABLE') return formatId(this.id);
+        if (this.type === 'VARIABLE') {
+            const validInputs = this.inputs.filter(n => n !== undefined && n !== null);
+            if (validInputs.length > 0) {
+                return validInputs[0].getExpression(new Set(visited));
+            }
+            return formatId(this.id);
+        }
         
         const validInputs = this.inputs.filter(n => n !== undefined && n !== null);
         if (validInputs.length === 0) return '0';
@@ -60,31 +74,44 @@ class LogicNode {
     }
 }
 
-function generateTruthTable(inputNodes) {
-    if (inputNodes.length === 0) return [];
-    const numRows = Math.pow(2, inputNodes.length);
+// 진리표 생성 시 연결 여부(wires)를 바탕으로 Input/Output 분류
+function generateTruthTable(allNodes, wires) {
+    const vars = allNodes.filter(n => n.type === 'VARIABLE');
+    const inputs = [];
+    const outputs = [];
+
+    vars.forEach(v => {
+        // 자신을 목적지(to)로 하는 와이어가 있으면 OUTPUT, 없으면 INPUT
+        const isOutput = wires.some(w => w.to === v.id);
+        if (isOutput) outputs.push(v);
+        else inputs.push(v);
+    });
+
+    if (inputs.length === 0) return { inputs: [], outputs: [], data: [] };
+
+    const numRows = Math.pow(2, inputs.length);
     const table = [];
     
     // 현재 값 백업
-    const originalValues = inputNodes.map(n => n.value);
+    const originalValues = inputs.map(n => n.logicNode.value);
 
     for (let i = 0; i < numRows; i++) {
         const row = {};
-        inputNodes.forEach((node, idx) => {
-            const bit = (i >> (inputNodes.length - 1 - idx)) & 1;
-            node.value = bit;
+        inputs.forEach((node, idx) => {
+            const bit = (i >> (inputs.length - 1 - idx)) & 1;
+            node.logicNode.value = bit;
             row[node.id] = bit;
         });
-        // 모든 변수의 현재 상태를 기반으로 결과 계산
-        inputNodes.forEach(node => {
-            row[`${node.id}_out`] = node.evaluate();
+        
+        outputs.forEach(node => {
+            row[`${node.id}_out`] = node.logicNode.evaluate();
         });
         table.push(row);
     }
 
     // 값 복원
-    inputNodes.forEach((node, idx) => node.value = originalValues[idx]);
-    return table;
+    inputs.forEach((node, idx) => node.logicNode.value = originalValues[idx]);
+    return { inputs, outputs, data: table };
 }
 
 const GATE_DICTIONARY = [
@@ -96,4 +123,19 @@ const GATE_DICTIONARY = [
     { type: 'XOR', exp: '입력값이 서로 다를 때만 참(1)을 출력합니다.' },
     { type: 'XNOR', exp: '입력값이 서로 같을 때만 참(1)을 출력합니다.' },
     { type: 'Buffer', exp: '입력값을 변형 없이 그대로 출력합니다.' }
+];
+
+const MISSIONS = [
+    { level: 1, title: 'Level 1', desc: '두 입력 변수가 모두 1일 때에만 1을 출력하는 회로를 설계하세요.' },
+    { level: 2, title: 'Level 2', desc: '두 입력 변수 중 하나라도 1이면 1을 출력하는 회로를 설계하세요.' },
+    { level: 3, title: 'Level 3', desc: '입력 변수가 0이면 1을, 1이면 0을 출력하는 회로를 설계하세요.' },
+    { level: 4, title: 'Level 4', desc: '두 입력 변수의 값이 서로 다를 때에만 1을 출력하는 회로를 설계하세요.' },
+    { level: 5, title: 'Level 5', desc: 'AND, OR, NOT 게이트만을 사용하여, 두 입력 변수의 값이 서로 다를 때에만 1을 출력하는 회로를 설계하세요.' },
+    { level: 6, title: 'Level 6', desc: '3개의 입력 변수 중 값이 1인 변수가 2개 이상일 때 1을 출력하는 회로를 설계하세요.' },
+    { level: 7, title: 'Level 7', desc: '두 입력 변수를 더하여, \'합(Sum)\'과 \'자리올림(Carry)\'을 각각 출력하는 회로를 설계하세요. (출력 변수 2개 필요)' },
+    { level: 8, title: 'Level 8', desc: '3개의 입력 변수(A, B, S)에 대하여, S가 0일 때는 A의 값을, S가 1일 때는 B의 값을 그대로 출력하는 회로를 설계하세요.' },
+    { level: 9, title: 'Level 9', desc: '3개의 입력 변수(비트 2개, 자리올림수 1개)를 더하여, 최종 \'합(Sum)\'과 \'자리올림(Carry)\'을 각각 출력하는 회로를 설계하세요. (출력 변수 2개 필요)' },
+    { level: 10, title: 'Level 10', desc: '4개의 입력 변수에 대하여, 2비트 값 묶음 (A1, A0)와 (B1, B0)의 값이 완벽히 일치할 때에만 1을 출력하는 회로를 설계하세요.' },
+    { level: 11, title: 'Level 11', desc: '3개의 입력 변수 중 값이 1인 변수의 개수가 짝수(0개, 2개)일 때 1을, 홀수(1개, 3개)일 때 0을 출력하는 회로를 설계하세요.' },
+    { level: 12, title: 'Level 12', desc: '2개의 입력 변수 값 조합(00, 01, 10, 11)에 따라, 4개의 출력 변수 중 단 1개만 1이 되도록 신호를 분배하는 회로를 설계하세요. (출력 변수 4개 필요)' }
 ];
