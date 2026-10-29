@@ -45,7 +45,7 @@
         <div class="workspace">
             <aside class="gate-toolbar">
                 <div class="gate-item" draggable="true" data-type="VARIABLE">
-                    <span>변수</span><button class="info-btn" data-info="입출력 가능 변수 (좌측 선 연결시 출력, 미연결시 입력)">+</button>
+                    <span>변수</span><button class="info-btn" data-info="미연결시 INPUT, 좌측 연결시 OUTPUT으로 동작">+</button>
                 </div>
                 <div class="gate-item" draggable="true" data-type="AND">
                     <span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button>
@@ -73,7 +73,7 @@
                 </div>
                 
                 <div id="tooltip-box" class="tooltip-box hidden">
-                    <button id="close-tooltip-btn" class="close-btn">&times;</button>
+                    <button id="close-tooltip-btn" class="close-btn" style="color:black;">&times;</button>
                     <p id="tooltip-desc"></p>
                 </div>
             </aside>
@@ -100,8 +100,8 @@
             </main>
         </div>
         
-        <div class="boolean-equation">
-            <span id="equation-display">대기 중...</span>
+        <div class="boolean-equation" style="display: none;">
+            <span id="equation-display"></span>
         </div>
     </section>
 
@@ -110,8 +110,14 @@
             <h2>게이트 사전</h2>
             <button class="open-menu-btn hamburger-btn">&#9776;</button>
         </header>
-        <div id="dict-dim-overlay" class="dict-dim-overlay"></div>
         <div id="dict-card-grid" class="card-grid"></div>
+        
+        <!-- 게이트 사전 클릭 시 나타나는 팝업 네모 -->
+        <div id="gate-popup" class="gate-popup hidden">
+            <button id="gate-popup-close" class="close-btn" style="color:black;">&times;</button>
+            <h3 id="gate-popup-title"></h3>
+            <p id="gate-popup-desc"></p>
+        </div>
     </section>
 
     <section id="page-3" class="page">
@@ -119,7 +125,7 @@
             <h2>미션 챌린지</h2>
             <button class="open-menu-btn hamburger-btn">&#9776;</button>
         </header>
-        <div id="level-grid" class="card-grid"></div>
+        <div id="level-grid" class="card-grid mission-grid"></div>
     </section>
 
     <div id="delete-modal-overlay" class="modal-overlay hidden">
