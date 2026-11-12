@@ -15,25 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentZoom = 1;
     let isPanning = false, panX = 0, panY = 0, startMouseX = 0, startMouseY = 0;
 
-    // --- 레벨 챌린지 캔버스 상태 저장 및 불러오기 기능 추가 ---
-    window.workspaceStates = { 'free': { nodes: [], wires: [], varCount: 1, gateCount: 1 } };
-    
-    window.saveCurrentWorkspace = function(levelKey) {
-        window.workspaceStates[levelKey] = { nodes: nodes, wires: wires, varCount: varCount, gateCount: gateCount };
+    // 레벨 별 캔버스 상태 저장용 데이터 구조
+    window.circuitData = { default: { nodes: [], wires: [], varCount: 1, gateCount: 1 } };
+    for(let i = 1; i <= 12; i++) window.circuitData[i] = { nodes: [], wires: [], varCount: 1, gateCount: 1 };
+
+    window.saveCanvasState = function(levelKey) {
+        const key = levelKey || 'default';
+        window.circuitData[key] = { nodes: [...nodes], wires: [...wires], varCount, gateCount };
     };
 
-    window.loadWorkspace = function(levelKey) {
-        if (!window.workspaceStates[levelKey]) {
-            window.workspaceStates[levelKey] = { nodes: [], wires: [], varCount: 1, gateCount: 1 };
-        }
-        const state = window.workspaceStates[levelKey];
-        nodes = state.nodes;
-        wires = state.wires;
-        varCount = state.varCount;
-        gateCount = state.gateCount;
+    window.loadCanvasState = function(levelKey) {
+        const key = levelKey || 'default';
+        const data = window.circuitData[key];
+        nodes = [...data.nodes];
+        wires = [...data.wires];
+        varCount = data.varCount;
+        gateCount = data.gateCount;
         renderCanvas();
     };
-    // ----------------------------------------------------
 
     function applyTransform() {
         canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
@@ -72,6 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedType = null;
     });
 
+    // 툴팁(툴바 설명창)
+    const dimOverlay = document.getElementById('dim-overlay');
+    const tooltipBox = document.getElementById('tooltip-box');
+    const tooltipDesc = document.getElementById('tooltip-desc');
+    
+    document.querySelectorAll('.info-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            tooltipDesc.innerHTML = e.currentTarget.dataset.info;
+            tooltipBox.style.top = `${e.currentTarget.parentElement.offsetTop}px`;
+            tooltipBox.classList.remove('hidden');
+            dimOverlay.classList.add('active');
+        });
+    });
+    const closeTooltip = () => { tooltipBox.classList.add('hidden'); dimOverlay.classList.remove('active'); };
+    document.getElementById('close-tooltip-btn').addEventListener('click', closeTooltip);
+    dimOverlay.addEventListener('click', closeTooltip);
+
     function getGateSVG(type) {
         const svgs = {
             'AND': `<path d="M5,5 L35,5 A15,15 0 0,1 35,35 L5,35 Z" fill="white" stroke="black" stroke-width="2"/>`,
@@ -106,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (n.type === 'VARIABLE') {
                 el.classList.add('gate-text');
                 const hasInputWire = wires.some(w => w.to === n.id);
+                // 입력 선이 있으면 값이 동적으로 변함 (OUTPUT), 없으면 수동 조작 (INPUT)
                 const displayVal = hasInputWire ? n.logicNode.evaluate() : n.logicNode.value;
                 
                 el.innerHTML = `<i>${n.id.split('_')[0]}<sub>${n.id.split('_')[1]}</sub></i> <span class="val-badge ${hasInputWire ? 'locked' : ''}">${displayVal}</span>`;
@@ -256,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCanvas();
     }
 
+    // 결과창: 아무것도 없을 땐 숨김 처리 / OUTPUT 변수만 추출하여 표시
     function updateEquation() {
         const outVars = nodes.filter(n => n.type === 'VARIABLE' && wires.some(w => w.to === n.id));
         
@@ -297,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return; 
                 }
                 
+                // (In) / (Out) 헤더 분리
                 let html = '<tr>' + 
                            inputs.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (In)</th>`).join('') + 
                            outputs.map(i => `<th>${i.id.split('_')[0]}<sub>${i.id.split('_')[1]}</sub> (Out)</th>`).join('') + 
