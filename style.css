@@ -122,9 +122,9 @@ th { background: var(--primary-color); color: white; }
 .gate-card.selected { border-color: var(--hover-blue); background-color: #f8fbff; }
 
 .level-card { padding: 2rem 1.5rem; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid #ddd; transition: background 0.3s, border-color 0.3s; height: auto;}
+.level-card:hover { border-color: var(--hover-blue) !important; } /* 모든 상태(도전 안 함, 성공, 실패)에서 마우스오버 시 파란색 윤곽선 적용 */
 .level-card.unattempted { background-color: white; color: #333; }
 .level-card.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
-.level-card.success:hover { border-color: var(--hover-blue) !important; } /* 호버 시 윤곽선 푸른색으로 맞춤 */
 .level-card.failure { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
 /* Modals */
