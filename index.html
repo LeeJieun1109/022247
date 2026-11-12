@@ -45,36 +45,31 @@
         <div class="workspace">
             <aside class="gate-toolbar">
                 <div class="gate-item" draggable="true" data-type="VARIABLE">
-                    <span>변수</span><button class="info-btn" data-info="미연결시 INPUT, 좌측 연결시 OUTPUT으로 동작">+</button>
+                    <span>변수</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="AND">
-                    <span>AND</span><button class="info-btn" data-info="모든 입력이 1일 때만 1 출력">+</button>
+                    <span>AND</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="OR">
-                    <span>OR</span><button class="info-btn" data-info="입력 중 하나라도 1이면 1 출력">+</button>
+                    <span>OR</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="NOT">
-                    <span>NOT</span><button class="info-btn" data-info="입력 반전">+</button>
+                    <span>NOT</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="NAND">
-                    <span>NAND</span><button class="info-btn" data-info="AND 반전">+</button>
+                    <span>NAND</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="NOR">
-                    <span>NOR</span><button class="info-btn" data-info="OR 반전">+</button>
+                    <span>NOR</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="XOR">
-                    <span>XOR</span><button class="info-btn" data-info="입력이 서로 다를 때만 1 출력">+</button>
+                    <span>XOR</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="XNOR">
-                    <span>XNOR</span><button class="info-btn" data-info="입력이 서로 같을 때만 1 출력">+</button>
+                    <span>XNOR</span>
                 </div>
                 <div class="gate-item" draggable="true" data-type="Buffer">
-                    <span>Buffer</span><button class="info-btn" data-info="신호 유지/전달">+</button>
-                </div>
-                
-                <div id="tooltip-box" class="tooltip-box hidden">
-                    <button id="close-tooltip-btn" class="close-btn" style="color:black;">&times;</button>
-                    <p id="tooltip-desc"></p>
+                    <span>Buffer</span>
                 </div>
             </aside>
 
@@ -112,8 +107,8 @@
         </header>
         <div id="dict-card-grid" class="card-grid"></div>
         
-        <!-- 게이트 사전 클릭 시 나타나는 팝업 네모 -->
         <div id="gate-popup" class="gate-popup hidden">
+            <!-- 닫기 버튼 텍스트를 ×(곱하기 기호)로 변경 -->
             <button id="gate-popup-close" class="close-btn" style="color:black;">&times;</button>
             <h3 id="gate-popup-title"></h3>
             <p id="gate-popup-desc"></p>
