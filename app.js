@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             const targetId = e.currentTarget.dataset.target;
             
-            // 회로도 그리기 메뉴로 바로 이동할 때 (프리 모드)
-            if (targetId === 'page-1') {
-                if (window.saveCurrentWorkspace) window.saveCurrentWorkspace(window.currentActiveLevel || 'free');
+            // 메뉴를 통해 회로도 그리기로 진입 시 레벨 작업 중이었다면 상태 저장 후 기본 캔버스 로드
+            if (targetId === 'page-1' && window.currentActiveLevel !== null) {
+                if (window.saveCanvasState) window.saveCanvasState(window.currentActiveLevel);
                 window.currentActiveLevel = null;
-                if (window.loadWorkspace) window.loadWorkspace('free');
+                if (window.loadCanvasState) window.loadCanvasState('default');
                 
                 document.getElementById('circuit-header-title').innerText = '회로도 그리기';
                 document.getElementById('toggle-view-btn').classList.remove('hidden');
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('back-to-challenge-btn').classList.add('hidden');
                 document.querySelector('#page-1 .open-menu-btn').classList.remove('hidden');
             }
+            
             showPageById(targetId);
         });
     });
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.open-menu-btn').forEach(btn => btn.addEventListener('click', () => sideMenu.classList.add('open')));
     document.getElementById('close-menu-btn').addEventListener('click', () => sideMenu.classList.remove('open'));
 
+    // 게이트 사전 렌더링 (카드 클릭 시 팝업 생성 방식 적용)
     const dictGrid = document.getElementById('dict-card-grid');
     const gatePopup = document.getElementById('gate-popup');
     const gatePopupTitle = document.getElementById('gate-popup-title');
@@ -47,9 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<h3>${gate.type}</h3>`;
             
             card.addEventListener('click', (e) => {
+                // 클릭한 카드만 강조
                 document.querySelectorAll('.gate-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
 
+                // 팝업 내용 업데이트 및 표시 (클릭한 요소 근처 위치 설정)
                 gatePopupTitle.innerText = gate.type;
                 gatePopupDesc.innerText = gate.exp;
                 
@@ -67,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 미션 챌린지 렌더링
     const levelGrid = document.getElementById('level-grid');
     if (levelGrid && typeof MISSIONS !== 'undefined') {
         MISSIONS.forEach(mission => {
@@ -77,11 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<h3 style="margin-bottom:0.8rem;">${mission.title}</h3><p style="font-size:0.95rem; font-weight:normal; line-height:1.4;">${mission.desc}</p>`;
             
             card.addEventListener('click', () => {
-                // 이전 작업 저장 후 챌린지 레벨 작업 불러오기
-                if (window.saveCurrentWorkspace) window.saveCurrentWorkspace(window.currentActiveLevel || 'free');
+                if (window.saveCanvasState) window.saveCanvasState(window.currentActiveLevel);
                 window.currentActiveLevel = mission.level;
-                if (window.loadWorkspace) window.loadWorkspace(mission.level);
-
+                if (window.loadCanvasState) window.loadCanvasState(window.currentActiveLevel);
+                
                 showPageById('page-1');
                 
                 document.getElementById('circuit-header-title').innerText = `${mission.title} : 회로 설계하기`;
@@ -95,11 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('back-to-challenge-btn').addEventListener('click', () => {
-        // 현재 레벨 챌린지 저장 후 뒤로가기
-        if (window.saveCurrentWorkspace) window.saveCurrentWorkspace(window.currentActiveLevel || 'free');
+        if (window.saveCanvasState) window.saveCanvasState(window.currentActiveLevel);
         window.currentActiveLevel = null;
-        if (window.loadWorkspace) window.loadWorkspace('free');
-
+        if (window.loadCanvasState) window.loadCanvasState('default');
+        
         showPageById('page-3');
         
         document.getElementById('circuit-header-title').innerText = '회로도 그리기';
