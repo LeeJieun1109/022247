@@ -71,6 +71,11 @@
                 <div class="gate-item" draggable="true" data-type="Buffer">
                     <span>Buffer</span>
                 </div>
+                
+                <div id="tooltip-box" class="tooltip-box hidden">
+                    <button id="close-tooltip-btn" class="close-btn" style="color:black;">&times;</button>
+                    <p id="tooltip-desc"></p>
+                </div>
             </aside>
 
             <div class="zoom-controls">
@@ -107,9 +112,9 @@
         </header>
         <div id="dict-card-grid" class="card-grid"></div>
         
+        <!-- 게이트 사전 클릭 시 나타나는 팝업 네모 -->
         <div id="gate-popup" class="gate-popup hidden">
-            <!-- 닫기 버튼 텍스트를 ×(곱하기 기호)로 변경 -->
-            <button id="gate-popup-close" class="close-btn" style="color:black;">&times;</button>
+            <button id="gate-popup-close" class="close-btn" style="color:black;">×</button>
             <h3 id="gate-popup-title"></h3>
             <p id="gate-popup-desc"></p>
         </div>
